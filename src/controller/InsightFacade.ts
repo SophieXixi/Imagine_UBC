@@ -6,6 +6,11 @@ import {
 	InsightResult,
 	NotFoundError
 } from "./IInsightFacade";
+import {Filter} from "./Filter";
+import {Dataset} from "./DatasetHelper";
+import {Section} from "./CourseHelper";
+import JSZip from "jszip";
+import {Query} from "./Query";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -13,181 +18,122 @@ import {
  *
  */
 export default class InsightFacade implements IInsightFacade {
-
-
+	private static datasets: Map<string, Dataset>;
+	private static IDs: string[];
 	constructor() {
 		console.log("InsightFacadeImpl::init()");
+		InsightFacade.datasets = new Map<string, Dataset>();
+		InsightFacade.IDs = [];
 	}
-
-	public addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
-		return Promise.resolve([]);
+	public addDataset(ID: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
+		let promises: any[] = [];
+		let dataset: Dataset;
+		let sections: Section[] = [];
+		return new Promise((fulfill, reject) => {
+			// * Base Case Invalid ID Tests
+			if(ID === "" || ID === " " || ID.includes("_") || InsightFacade.IDs.includes(ID)
+				|| kind !== InsightDatasetKind.Sections){
+				return reject(new InsightError("Invalid Dataset ID!"));
+			}
+			let newzip = new JSZip();
+			newzip.loadAsync(content, {base64: true})
+				.then(function (zip) {
+					try {
+						zip.folder("courses")?.forEach((relativePath: string, file: any) => {
+							// access all files in the folder
+							promises.push(file.async("text"));
+						});
+						// **check dataset size, reject empty dataset/wrong folder name
+						if (promises.length === 0) {
+							return reject(new InsightError("Empty dataset! Reject!"));
+						}
+					} catch { /* empty */ }
+					Promise.all(promises).then((results) => {
+						for (const data of results){
+							try{
+								let parse = JSON.parse(data);
+								for (const result of parse.result) {
+									// each section is formed into section name + content
+									const sec = new Section(result.id, result.Course, result.Title, result.Professor,
+										result.Subject,result.Year, result.Avg, result.Audit, result.Pass, result.Fail);
+									sections.push(sec);
+								}
+							} catch {
+								return reject(new InsightError("Not able to parse, Invalid JSON file/not JSON!"));
+							}
+						}
+						if (sections.length === 0) {
+							return reject(new Error("No valid section! Bad Dataset"));
+						}
+						dataset = new Dataset(ID, sections);
+						const re = InsightFacade.store(ID,dataset);
+						return fulfill(re);
+					}).catch((err) => {
+						// * not a zip file, reject
+						return reject(err);
+					});
+				}).catch(() => {
+				// **not a zip file, reject
+					return reject(new InsightError("Not a zip file, failed to load!"));
+				});
+		});
 	}
 
 	public removeDataset(id: string): Promise<string> {
-		return Promise.reject("Not implemented.");
+		return new Promise((fulfill, reject) => {
+			if (id === "" || id === " " || id.includes("_")) {
+				return reject(new InsightError("Invalid Dataset ID!"));
+			}
+			if(!InsightFacade.IDs.includes(id)){
+				return reject(new NotFoundError("Non-exist Dateset ID!"));
+			}
+			// delete id from id-list
+			delete InsightFacade.IDs[InsightFacade.IDs.indexOf(id)];
+			// delete from dataset
+			InsightFacade.datasets.delete(id);
+			const index = InsightFacade.IDs.indexOf(id,0);
+			if (index > -1) {
+				InsightFacade.IDs.splice(index, 1);
+			}
+			return fulfill(id);
+			// fs.unlink(path, ((err) => {
+			// 	if (err) {
+			// 		return reject("reject delete dataset, not expected!");
+			// 	} else {
+			// 		return fulfill(id);
+			// 	}
+			// }));
+		});
 	}
 
 	public listDatasets(): Promise<InsightDataset[]> {
-		return Promise.reject("Not implemented.");
+		let results: InsightDataset[] = [];
+		return new Promise((fulfill) => {
+			InsightFacade.datasets.forEach(function (value: Dataset) {
+				let result = value.insightDataset;
+				results.push(result);
+			});
+			return fulfill(results);
+		});
 	}
 
-	public performQuery(query: unknown): Promise<InsightResult[]> {
+	private static store(ID: string, dataset: Dataset) {
+		this.datasets.set(ID,dataset);
+		this.IDs.push(ID);
+		return this.IDs;
+	}
+
+	public performQuery(que: unknown): Promise<InsightResult[]> {
+		let query: Query;
+		query = new Query();
 		// determine if a query is a valid query
-		if (query === null) {
+		if (que === null) {
 			return Promise.reject(new InsightError("no input"));
-		} else if (this.checkQuery(query)) {
+		} else if (query.checkQuery(que)) {
 			return Promise.reject(new InsightError("invalid query"));
 		} else {
 			// search
-
 			return Promise.reject("true");
-		}
-	}
-
-	/* if query is invalid, return 1;
-	   if query is valid, return 0;
-	 */
-	private checkQuery(que: unknown): number {
-		// check type
-		if (typeof que !== "object") {
-			return 1;
-		}
-		let query: any = que as any;
-		// check where
-		if (query.WHERE !== null) {
-			// check where type
-			if (typeof query.WHERE !== "object" || Array.isArray(query.WHERE)) {
-				return 1;
-			}
-			// preparation for iteration
-			let arr;
-			arr = Object.keys(query.WHERE);
-			for (const item of arr) {
-				let result: number;
-				result = this.checkFilter(item, query.WHERE);
-				if (result === 1) {
-					return 1;
-				}
-			}
-		}
-		// check options
-		if (query.OPTIONS) {
-			if (typeof query.OPTIONS !== "object") {
-				return 1;
-			} else {
-				let array;
-				array = Object.keys(query.OPTIONS);
-				if (!array.includes("COLUMNS")) {
-					return 1;
-				} else {
-					let res;
-					res = this.checkColumn(query.OPTIONS.COLUMNS);
-					if (res === 1) {
-						return 1;
-					}
-				}
-				if (array.includes("ORDER")) {
-					let res: number;
-					res = this.checkOrder(query.OPTIONS);
-					return res;
-				}
-			}
-		}
-		return 0;
-	}
-
-	private checkFilter(item: string, obj: any): number {
-		let res: number;
-		if (item === "OR") {
-			res = this.checkQueryOrAnd(obj.OR);
-		} else if (item === "AND") {
-			res = this.checkQueryOrAnd(obj.AND);
-		} else if (item === "GT") {
-			res = this.checkQueryGtLtEq(obj.GT);
-		} else if (item === "LT") {
-			res = this.checkQueryGtLtEq(obj.LT);
-		} else {
-			res = this.checkQueryGtLtEq(obj.EQ);
-		}
-		return res;
-	}
-
-	// check dataset
-	private checkQueryGtLtEq(obj: any): number {
-		if (typeof obj !== "object") {
-			return 1;
-		} else {
-			let arr;
-			arr = Object.keys(obj);
-			if (arr.length !== 1) {
-				return 1;
-			} else {
-				if (!(arr[0].includes("_avg") || arr[0].includes("_pass") ||
-					arr[0].includes("_fail") || arr[0].includes("_audit") || arr[0].includes("_year"))) {
-					return 1;
-				} else {
-					if (typeof obj.arr !== "number") {
-						return 1;
-					}
-				}
-			}
-		}
-		return 0;
-	}
-
-	private checkQueryOrAnd(arr: any): number {
-		if (Array.isArray(arr)) {
-			return 1;
-		} else {
-			for (const obj of arr) {
-				let array;
-				array = Object.keys(obj);
-				for (const key of array) {
-					let result: number;
-					result = this.checkFilter(key, obj);
-					if (result === 1) {
-						return 1;
-					}
-				}
-			}
-			return 0;
-		}
-	}
-
-	// check dataset
-	private checkColumn(arr: any): number {
-		let mfield = ["avg", "pass", "fail", "audit", "year"];
-		let sfield = ["dept", "id", "instructor", "title"];
-		if (!Array.isArray(arr)) {
-			return 1;
-		} else if (arr.length === 0) {
-			return 1;
-		} else {
-			for (const field of arr) {
-				let div: number;
-				div = field.search("_");
-				// no dataset included
-				if (div === 0) {
-					return 1;
-				} else {
-					let dataset: string = field.substring(0, div);
-					// !!!
-					// check dataset
-					let name: string = field.substring(div + 1);
-					if (!(mfield.includes(name) || sfield.includes(name))) {
-						return 1;
-					}
-				}
-			}
-			return 0;
-		}
-	}
-
-	private checkOrder(obj: any): number {
-		if (typeof obj.ORDER !== "string") {
-			return 1;
-		} else {
-			return obj.COLUMNS.includes(obj.ORDER);
 		}
 	}
 }

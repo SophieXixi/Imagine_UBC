@@ -64,6 +64,7 @@ describe("InsightFacade", function () {
 	 * You can still make tests the normal way, this is just a convenient tool for a majority of queries.
 	 */
 	describe("PerformQuery", () => {
+
 		before(function () {
 			console.info(`Before: ${this.test?.parent?.title}`);
 
@@ -82,22 +83,83 @@ describe("InsightFacade", function () {
 			console.info(`After: ${this.test?.parent?.title}`);
 			clearDisk();
 		});
+/*
+		// nothing passed in
+		it("performQuery: nothing passes in",
+			function() {
+				const result = facade.performQuery(null);
+				return expect(result).to.eventually.be.rejectedWith(InsightError);
+			});
 
-		type PQErrorKind = "ResultTooLargeError" | "InsightError";
+		// passed in empty string
+		it("performQuery: passes in an empty string",
+			function() {
+				const result = facade.performQuery("");
+				return expect(result).to.eventually.be.rejectedWith(InsightError);
+			});
 
-		folderTest<unknown, Promise<InsightResult[]>, PQErrorKind>(
-			"Dynamic InsightFacade PerformQuery tests",
+		// passed in a number
+		it("performQuery: passes in a number",
+			function() {
+				const result = facade.performQuery(5);
+				return expect(result).to.eventually.be.rejectedWith(InsightError);
+			});
+
+		// passed in an array
+		it("performQuery: passes in an array",
+			function() {
+				const result = facade.performQuery({});
+				return expect(result).to.eventually.be.rejectedWith(InsightError);
+			});
+
+		// passed in an empty string
+		it("performQuery: passes in a whitespace string",
+			function() {
+				const result = facade.performQuery("    ");
+				return expect(result).to.eventually.be.rejectedWith(InsightError);
+			});
+*/
+		type Input = unknown;
+		type Output = Promise<InsightResult[]>;
+		type Error = "InsightError" | "ResultTooLargeError";
+
+		function errorValidator(error: any): error is Error {
+			return error === "InsightError" || error === "ResultTooLargeError";
+		}
+
+		function assertOnError(actual: any, expected: Error): void {
+			if (expected === "InsightError") {
+				expect(actual).to.be.instanceof(InsightError);
+			} else if (expected === "ResultTooLargeError") {
+				expect(actual).to.be.instanceof(ResultTooLargeError);
+			} else{
+				expect.fail("there is an unexpected error");
+			}
+		}
+
+		function assertOnResult(actual: unknown, expected: Output): void {
+			expect(actual).to.deep.equal(expected);
+		}
+
+		folderTest<Input, Output, Error>(
+			"Dynamic InsightFacade PerformQuery tests - simple",
 			(input) => facade.performQuery(input),
 			"./test/resources/queries",
 			{
-				assertOnResult: (actual, expected) => {
-					// TODO add an assertion!
-				},
-				errorValidator: (error): error is PQErrorKind =>
-					error === "ResultTooLargeError" || error === "InsightError",
-				assertOnError: (actual, expected) => {
-					// TODO add an assertion!
-				},
+				errorValidator,
+				assertOnError,
+				assertOnResult
+			}
+		);
+
+		folderTest<Input, Output, Error>(
+			"Dynamic InsightFacade PerformQuery tests - complex",
+			(input) => facade.performQuery(input),
+			"./test/resources/complexQueries",
+			{
+				errorValidator,
+				assertOnError,
+				assertOnResult
 			}
 		);
 	});
