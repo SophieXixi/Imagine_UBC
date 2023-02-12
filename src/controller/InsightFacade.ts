@@ -102,10 +102,6 @@ export default class InsightFacade implements IInsightFacade {
 		});
 	}
 
-	public listDatasets(): Promise<InsightDataset[]> {
-		return Promise.reject("not implemented");
-	}
-
 	public performQuery(que: unknown): Promise<InsightResult[]> {
 		let query: CheckQuery;
 		query = new CheckQuery();
