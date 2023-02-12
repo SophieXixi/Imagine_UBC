@@ -25,7 +25,7 @@ export default class InsightFacade implements IInsightFacade {
 		console.log("InsightFacadeImpl::init()");
 		InsightFacade.datasets = new Map<string, Dataset>();
 		InsightFacade.IDs = [];
-		InsightFacade.checkCrash(InsightFacade.IDs, InsightFacade.datasets);
+		InsightFacade.checkcrash(InsightFacade.IDs, InsightFacade.datasets);
 	}
 
 	public addDataset(ID: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
@@ -89,14 +89,14 @@ export default class InsightFacade implements IInsightFacade {
 				return reject(new NotFoundError("Non-exist Dateset ID!"));
 			}
 			// delete id from id-list
-			const index = InsightFacade.IDs.indexOf(id);
+			delete InsightFacade.IDs[InsightFacade.IDs.indexOf(id)];
+			// delete from dataset
+			fs.unlinkSync("./data/" + id + ".json");
+			InsightFacade.datasets.delete(id);
+			const index = InsightFacade.IDs.indexOf(id, 0);
 			if (index > -1) {
 				InsightFacade.IDs.splice(index, 1);
 			}
-			// delete from dataset
-			InsightFacade.datasets.delete(id);
-			// delete from dir
-			fs.unlinkSync("./data/" + id + ".json");
 			return fulfill(id);
 		});
 	}
@@ -166,12 +166,12 @@ export default class InsightFacade implements IInsightFacade {
 			ID === " " ||
 			ID.includes("_") ||
 			InsightFacade.IDs.includes(ID) ||
-			// fs.existsSync("./data/" + ID + ".json") ||
+			fs.existsSync("./data/" + ID + ".json") ||
 			kind !== InsightDatasetKind.Sections
 		);
 	}
 
-	private static checkCrash(IDs: string[], datasets: Map<string, Dataset>) {
+	private static checkcrash(IDs: string[], datasets: Map<string, Dataset>) {
 		const dir = "./data";
 		if (fs.existsSync(dir)) {
 			// old datasets already exist
