@@ -1,8 +1,11 @@
 
-export class Query {
+export class CheckQuery {
 	private dataset: string;
 	constructor() {
 		this.dataset = "";
+	}
+	public getDataset(): string {
+		return this.dataset;
 	}
 	/* if query is invalid, return 1;
 	   if query is valid, return 0;
@@ -55,7 +58,6 @@ export class Query {
 		}
 		return 0;
 	}
-
 	private checkFilter(item: string, obj: any): number {
 		let res: number;
 		if (item === "OR") {
@@ -77,7 +79,6 @@ export class Query {
 		}
 		return res;
 	}
-
 	private checkQueryOrAnd(arr: any): number {
 		if (Array.isArray(arr)) {
 			return 1;

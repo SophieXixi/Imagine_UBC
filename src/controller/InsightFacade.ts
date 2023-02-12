@@ -6,11 +6,10 @@ import {
 	InsightResult,
 	NotFoundError
 } from "./IInsightFacade";
-import {Filter} from "./Filter";
 import {Dataset} from "./DatasetHelper";
 import {Section} from "./CourseHelper";
 import JSZip from "jszip";
-import {Query} from "./Query";
+import {CheckQuery} from "./CheckQuery";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -124,15 +123,20 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public performQuery(que: unknown): Promise<InsightResult[]> {
-		let query: Query;
-		query = new Query();
+		let query: CheckQuery;
+		query = new CheckQuery();
 		// determine if a query is a valid query
 		if (que === null) {
 			return Promise.reject(new InsightError("no input"));
 		} else if (query.checkQuery(que)) {
 			return Promise.reject(new InsightError("invalid query"));
+		} else if (!(InsightFacade.IDs.includes(query.getDataset()))) {
+			return Promise.reject(new InsightError("not valid dataset"));
 		} else {
 			// search
+			// let search: SearchQuery;
+			// let quer: any = que;
+			// search = new SearchQuery(quer.WHERE, InsightFacade.datasets.get(query.getDataset()));
 			return Promise.reject("true");
 		}
 	}
