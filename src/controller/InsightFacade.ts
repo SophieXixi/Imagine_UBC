@@ -114,7 +114,6 @@ export default class InsightFacade implements IInsightFacade {
 		} else {
 			// search
 			// let search: SearchQuery;
-			// let quer: any = que;
 			// search = new SearchQuery(quer.WHERE, InsightFacade.datasets.get(query.getDataset()));
 			return Promise.reject("true");
 		}
