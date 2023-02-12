@@ -11,6 +11,7 @@ import {Section} from "./CourseHelper";
 import {Dataset} from "./DatasetHelper";
 import * as fs from "fs-extra";
 import {CheckQuery} from "./CheckQuery";
+import {SearchQuery} from "./SearchQuery";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -114,6 +115,7 @@ export default class InsightFacade implements IInsightFacade {
 		} else {
 			// search
 			// let search: SearchQuery;
+			// let quer: any = que;
 			// search = new SearchQuery(quer.WHERE, InsightFacade.datasets.get(query.getDataset()));
 			return Promise.reject("true");
 		}
