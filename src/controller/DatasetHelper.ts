@@ -1,6 +1,6 @@
 import {InsightDataset, InsightDatasetKind} from "./IInsightFacade";
 import {Section} from "./CourseHelper";
-export class Dataset{
+export class Dataset {
 	public sections: Section[];
 	public id: string;
 	public insightDataset: InsightDataset;
@@ -9,17 +9,8 @@ export class Dataset{
 		this.sections = section;
 		this.insightDataset = {
 			id: this.id,
-			kind : InsightDatasetKind.Sections,
-			numRows : this.sections.length,
+			kind: InsightDatasetKind.Sections,
+			numRows: this.sections.length,
 		};
 	}
-	// public static get_insightDataset(): InsightDataset{
-	// 	return {
-	// 		id: this.id,
-	// 		kind : InsightDatasetKind.Sections,
-	// 		numRows : this.sections.length,
-	// 	};
-	// }
 }
-
-

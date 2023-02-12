@@ -4,7 +4,7 @@ import {
 	InsightError,
 	InsightResult,
 	NotFoundError,
-	ResultTooLargeError
+	ResultTooLargeError,
 } from "../../src/controller/IInsightFacade";
 import InsightFacade from "../../src/controller/InsightFacade";
 
@@ -72,13 +72,13 @@ describe("InsightFacade", function () {
 		});
 
 		// This is a unit test. You should create more like this!
-		it ("should reject with  an empty dataset id", function() {
+		it("should reject with  an empty dataset id", function () {
 			const result = facade.addDataset("", sections, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
 		it("should successfully add an dataset", async function () {
-			const add = await facade.addDataset("course", sections, InsightDatasetKind.Sections);
+			const add = await facade.addDataset("course", small, InsightDatasetKind.Sections);
 			expect(add).to.deep.equal(["course"]);
 		});
 
@@ -175,7 +175,7 @@ describe("InsightFacade", function () {
 		});
 
 		it("should reject with datasat added but an nonexist dataset id to remove", async function () {
-			try{
+			try {
 				await facade.addDataset("removecourse", small, InsightDatasetKind.Sections);
 				await facade.removeDataset("nonexist");
 				expect.fail("should have been rejected!");
@@ -203,16 +203,18 @@ describe("InsightFacade", function () {
 			expect(removeid).to.deep.equal("add2");
 		});
 
-		it("should successfully for combination", async function(){
+		it("should successfully for combination", async function () {
 			await facade.addDataset("add1", small, InsightDatasetKind.Sections);
 			await facade.addDataset("add2", small, InsightDatasetKind.Sections);
 			await facade.removeDataset("add2");
 			const left = await facade.listDatasets();
-			expect(left).to.deep.equal([{
-				id: "add1",
-				kind: InsightDatasetKind.Sections,
-				numRows: 2
-			}]);
+			expect(left).to.deep.equal([
+				{
+					id: "add1",
+					kind: InsightDatasetKind.Sections,
+					numRows: 2,
+				},
+			]);
 		});
 
 		// List Dataset Tests
@@ -227,11 +229,13 @@ describe("InsightFacade", function () {
 			// Execution
 			const datasets = await facade.listDatasets();
 			// Validation
-			expect(datasets).to.deep.equal([{
-				id: "list",
-				kind: InsightDatasetKind.Sections,
-				numRows: 2
-			}]);
+			expect(datasets).to.deep.equal([
+				{
+					id: "list",
+					kind: InsightDatasetKind.Sections,
+					numRows: 2,
+				},
+			]);
 		});
 
 		// fixxxx
@@ -249,7 +253,41 @@ describe("InsightFacade", function () {
 			expect(course).to.deep.equal({
 				id: "sev1",
 				kind: InsightDatasetKind.Sections,
-				numRows: 2
+				numRows: 2,
+			});
+		});
+
+		it("crash test", async function () {
+			await facade.addDataset("add1", small, InsightDatasetKind.Sections);
+			const newfacade = new InsightFacade();
+			await newfacade.addDataset("add2", small, InsightDatasetKind.Sections);
+			await newfacade.removeDataset("add1");
+			const left = await facade.listDatasets();
+			expect(left).to.deep.equal([
+				{
+					id: "add2",
+					kind: InsightDatasetKind.Sections,
+					numRows: 2,
+				},
+			]);
+		});
+		// fixxxx
+		it("should list several datasets", async function () {
+			// Setup
+			await facade.addDataset("sev1", small, InsightDatasetKind.Sections);
+			await facade.addDataset("sev2", small, InsightDatasetKind.Sections);
+			// Execution
+			const newfacade = new InsightFacade();
+			const datasets = await newfacade.listDatasets();
+			// Validation
+			expect(datasets).to.be.an.instanceOf(Array);
+			expect(datasets).to.have.length(2);
+			const course = datasets.find((dataset) => dataset.id === "sev1");
+			expect(course).to.exist;
+			expect(course).to.deep.equal({
+				id: "sev1",
+				kind: InsightDatasetKind.Sections,
+				numRows: 2,
 			});
 		});
 	});
@@ -267,9 +305,7 @@ describe("InsightFacade", function () {
 
 			// Load the datasets specified in datasetsToQuery and add them to InsightFacade.
 			// Will *fail* if there is a problem reading ANY dataset.
-			const loadDatasetPromises = [
-				facade.addDataset("sections", sections, InsightDatasetKind.Sections),
-			];
+			const loadDatasetPromises = [facade.addDataset("sections", sections, InsightDatasetKind.Sections)];
 
 			return Promise.all(loadDatasetPromises);
 		});
