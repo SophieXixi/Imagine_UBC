@@ -10,6 +10,7 @@ import JSZip from "jszip";
 import {Section} from "./CourseHelper";
 import {Dataset} from "./DatasetHelper";
 import * as fs from "fs-extra";
+import {CheckQuery} from "./CheckQuery";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -24,7 +25,7 @@ export default class InsightFacade implements IInsightFacade {
 		console.log("InsightFacadeImpl::init()");
 		InsightFacade.datasets = new Map<string, Dataset>();
 		InsightFacade.IDs = [];
-		InsightFacade.checkcrash(InsightFacade.IDs, InsightFacade.datasets);
+		InsightFacade.checkCrash(InsightFacade.IDs, InsightFacade.datasets);
 	}
 
 	public addDataset(ID: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
@@ -88,20 +89,35 @@ export default class InsightFacade implements IInsightFacade {
 				return reject(new NotFoundError("Non-exist Dateset ID!"));
 			}
 			// delete id from id-list
-			delete InsightFacade.IDs[InsightFacade.IDs.indexOf(id)];
-			// delete from dataset
-			fs.unlinkSync("./data/" + id + ".json");
-			InsightFacade.datasets.delete(id);
-			const index = InsightFacade.IDs.indexOf(id, 0);
+			const index = InsightFacade.IDs.indexOf(id);
 			if (index > -1) {
 				InsightFacade.IDs.splice(index, 1);
 			}
+			// delete from dataset
+			InsightFacade.datasets.delete(id);
+			// delete from dir
+			fs.unlinkSync("./data/" + id + ".json");
 			return fulfill(id);
 		});
 	}
 
-	public performQuery(query: unknown): Promise<InsightResult[]> {
-		return Promise.reject("Not implemented.");
+	public performQuery(que: unknown): Promise<InsightResult[]> {
+		let query: CheckQuery;
+		query = new CheckQuery();
+		// determine if a query is a valid query
+		if (que === null) {
+			return Promise.reject(new InsightError("no input"));
+		} else if (query.checkQuery(que)) {
+			return Promise.reject(new InsightError("invalid query"));
+		} else if (!(InsightFacade.IDs.includes(query.getDataset()))) {
+			return Promise.reject(new InsightError("not valid dataset"));
+		} else {
+			// search
+			// let search: SearchQuery;
+			// let quer: any = que;
+			// search = new SearchQuery(quer.WHERE, InsightFacade.datasets.get(query.getDataset()));
+			return Promise.reject("true");
+		}
 	}
 
 	public listDatasets(): Promise<InsightDataset[]> {
@@ -150,12 +166,12 @@ export default class InsightFacade implements IInsightFacade {
 			ID === " " ||
 			ID.includes("_") ||
 			InsightFacade.IDs.includes(ID) ||
-			fs.existsSync("./data/" + ID + ".json") ||
+			// fs.existsSync("./data/" + ID + ".json") ||
 			kind !== InsightDatasetKind.Sections
 		);
 	}
 
-	private static checkcrash(IDs: string[], datasets: Map<string, Dataset>) {
+	private static checkCrash(IDs: string[], datasets: Map<string, Dataset>) {
 		const dir = "./data";
 		if (fs.existsSync(dir)) {
 			// old datasets already exist
