@@ -138,6 +138,11 @@ export class CheckQuery {
 				if (this.checkKey(arr[0], "s") || typeof obj.arr !== "string") {
 					return 1;
 				}
+				if (obj.arr[0].includes("*")) {
+					if (obj.arr[0].substring(1, obj.arr[0].length - 1)) {
+						return 1;
+					}
+				}
 			}
 			return 0;
 		}

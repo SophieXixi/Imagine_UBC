@@ -4,7 +4,7 @@ import {
 	InsightDatasetKind,
 	InsightError,
 	InsightResult,
-	NotFoundError,
+	NotFoundError, ResultTooLargeError,
 } from "./IInsightFacade";
 import JSZip from "jszip";
 import {Section} from "./CourseHelper";
@@ -114,11 +114,52 @@ export default class InsightFacade implements IInsightFacade {
 			return Promise.reject(new InsightError("not valid dataset"));
 		} else {
 			// search
-			// let search: SearchQuery;
-			// let quer: any = que;
-			// search = new SearchQuery(quer.WHERE, InsightFacade.datasets.get(query.getDataset()));
-			return Promise.reject("true");
+			let search: SearchQuery;
+			let quer: any = que;
+			search = new SearchQuery(quer.WHERE, InsightFacade.datasets.get(query.getDataset()));
+			let result: Section[] = search.searchQuery();
+			if (result.length >= 5000) {
+				return Promise.reject(new ResultTooLargeError("over 5000"));
+			} else {
+				return Promise.resolve(this.displayQuery(result, quer, query.getDataset()));
+			}
 		}
+	}
+
+	private displayQuery(secs: Section[], query: any, id: string): Promise<InsightResult[]> {
+		let keys = Object.keys(query.OPTIONS.COLUMNS);
+		let arr = [];
+		for (const sec of secs) {
+			arr.push(this.displaySection(sec, keys, id));
+		}
+		return Promise.resolve(arr);
+	}
+	private displaySection(sec: Section, keys: string[], id: string): InsightResult {
+		let obj = Object.create(null);
+		for(const key of keys) {
+			if (key === id.concat("_uuid")) {
+				obj[key] = sec.uuid;
+			} else if (key === id.concat("_year")) {
+				obj[key] = sec.year;
+			} else if (key === id.concat("_dept")) {
+				obj[key] = sec.dept;
+			} else if (key === id.concat("_id")) {
+				obj[key] = sec.id;
+			} else if (key === id.concat("_title")) {
+				obj[key] = sec.title;
+			} else if (key === id.concat("_instructor")) {
+				obj[key] = sec.instructor;
+			} else if (key === id.concat("_avg")) {
+				obj[key] = sec.avg;
+			} else if (key === id.concat("_pass")) {
+				obj[key] = sec.pass;
+			} else if (key === id.concat("_fail")) {
+				obj[key] = sec.fail;
+			} else {
+				obj[key] = sec.audit;
+			}
+		}
+		return obj;
 	}
 
 	public listDatasets(): Promise<InsightDataset[]> {
