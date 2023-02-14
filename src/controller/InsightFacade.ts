@@ -14,6 +14,7 @@ import * as fs from "fs-extra";
 import {CheckQuery} from "./CheckQuery";
 import {SearchQuery} from "./SearchQuery";
 
+
 /**
  * This is the main programmatic entry point for the project.
  * Method documentation is in IInsightFacade
@@ -308,23 +309,38 @@ export default class InsightFacade implements IInsightFacade {
 	private static parse(data: Awaited<any>, sections: Section[]) {
 		let parse = JSON.parse(data);
 		for (const result of parse.result) {
-			// each section is formed into section name + content
-			const sec = new Section(
-				result.id,
-				result.Course,
-				result.Title,
-				result.Professor,
-				result.Subject,
-				result.Year,
-				result.Avg,
-				result.Audit,
-				result.Pass,
-				result.Fail
-			);
-			sections.push(sec);
+			if (result.Section === "overall"){
+				const sec = new Section(
+					result.id,
+					result.Course,
+					result.Title,
+					result.Professor,
+					result.Subject,
+					1900,
+					result.Avg,
+					result.Audit,
+					result.Pass,
+					result.Fail
+				);
+				sections.push(sec);
+			} else {
+				// each section is formed into section name + content
+				const sec = new Section(
+					result.id,
+					result.Course,
+					result.Title,
+					result.Professor,
+					result.Subject,
+					result.Year,
+					result.Avg,
+					result.Audit,
+					result.Pass,
+					result.Fail
+				);
+				sections.push(sec);
+			}
 		}
 	}
-
 	private static checkValidID(ID: string, kind: InsightDatasetKind): boolean {
 		return (
 			ID === "" ||
