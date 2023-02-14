@@ -21,8 +21,8 @@ export class SearchQuery {
 			if (this.valid_sections.length > 5000) {
 				return reject(new ResultTooLargeError("> 5000"));
 			} else {
-				// console.log("search");
-				// console.log(this.valid_sections);
+				console.log("search");
+				console.log(this.valid_sections.length);
 				return resolve(this.valid_sections);
 			}
 		});
@@ -120,11 +120,13 @@ export class SearchQuery {
 	private filterLt(obj: any, sec: Section): number {
 		let arr = Object.keys(obj);
 		let array = Object.keys(obj[arr[0]]);
-		let field = arr[0].substring(array[0].search("_") + 1);
+		let field = array[0].substring(array[0].search("_") + 1);
 		if (field === "avg") {
 			if (sec.avg < obj[arr[0]][array[0]]) {
+				// console.log(obj[arr[0]][array[0]]);
 				return 0;
 			} else {
+				// console.log(obj[arr[0]][array[0]]);
 				return 1;
 			}
 		} else if (field === "pass") {
@@ -156,7 +158,7 @@ export class SearchQuery {
 	private filterEq(obj: any, sec: Section): number {
 		let arr = Object.keys(obj);
 		let array = Object.keys(obj[arr[0]]);
-		let field = arr[0].substring(array[0].search("_") + 1);
+		let field = array[0].substring(array[0].search("_") + 1);
 		if (field === "avg") {
 			if (sec.avg === obj[arr[0]][array[0]]) {
 				return 0;
@@ -192,7 +194,8 @@ export class SearchQuery {
 	private filterIs(obj: any, sec: Section): number {
 		let arr = Object.keys(obj);
 		let array = Object.keys(obj[arr[0]]);
-		let field = arr[0].substring(arr[0].search("_") + 1);
+		let field = array[0].substring(array[0].search("_") + 1);
+		// console.log(field);
 		let str = obj[arr[0]][array[0]];
 		if (str.startsWith("*") && str.endsWith("*")) {
 			if (this.IsIncludes(sec, field, obj[arr[0]][array[0]])) {
