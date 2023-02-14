@@ -10,7 +10,7 @@ import JSZip from "jszip";
 import {Section} from "./CourseHelper";
 import {Dataset} from "./DatasetHelper";
 import * as fs from "fs-extra";
-import {CheckQuery} from "./CheckQuery";
+
 
 /**
  * This is the main programmatic entry point for the project.
@@ -102,22 +102,7 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public performQuery(que: unknown): Promise<InsightResult[]> {
-		let query: CheckQuery;
-		query = new CheckQuery();
-		// determine if a query is a valid query
-		if (que === null) {
-			return Promise.reject(new InsightError("no input"));
-		} else if (query.checkQuery(que)) {
-			return Promise.reject(new InsightError("invalid query"));
-		} else if (!(InsightFacade.IDs.includes(query.getDataset()))) {
-			return Promise.reject(new InsightError("not valid dataset"));
-		} else {
-			// search
-			// let search: SearchQuery;
-			// let quer: any = que;
-			// search = new SearchQuery(quer.WHERE, InsightFacade.datasets.get(query.getDataset()));
-			return Promise.reject("true");
-		}
+		return Promise.reject("true");
 	}
 
 	public listDatasets(): Promise<InsightDataset[]> {
