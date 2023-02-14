@@ -10,8 +10,6 @@ import JSZip from "jszip";
 import {Section} from "./CourseHelper";
 import {Dataset} from "./DatasetHelper";
 import * as fs from "fs-extra";
-import {CheckQuery} from "./CheckQuery";
-
 
 /**
  * This is the main programmatic entry point for the project.
@@ -102,8 +100,8 @@ export default class InsightFacade implements IInsightFacade {
 		});
 	}
 
-	public performQuery(que: unknown): Promise<InsightResult[]> {
-		return Promise.reject("true");
+	public performQuery(query: unknown): Promise<InsightResult[]> {
+		return Promise.reject("Not implemented.");
 	}
 
 	public listDatasets(): Promise<InsightDataset[]> {
@@ -129,38 +127,23 @@ export default class InsightFacade implements IInsightFacade {
 	private static parse(data: Awaited<any>, sections: Section[]) {
 		let parse = JSON.parse(data);
 		for (const result of parse.result) {
-			if (result.Section === "overall"){
-				const sec = new Section(
-					result.id,
-					result.Course,
-					result.Title,
-					result.Professor,
-					result.Subject,
-					1900,
-					result.Avg,
-					result.Audit,
-					result.Pass,
-					result.Fail
-				);
-				sections.push(sec);
-			} else {
-				// each section is formed into section name + content
-				const sec = new Section(
-					result.id,
-					result.Course,
-					result.Title,
-					result.Professor,
-					result.Subject,
-					result.Year,
-					result.Avg,
-					result.Audit,
-					result.Pass,
-					result.Fail
-				);
-				sections.push(sec);
-			}
+			// each section is formed into section name + content
+			const sec = new Section(
+				result.id,
+				result.Course,
+				result.Title,
+				result.Professor,
+				result.Subject,
+				result.Year,
+				result.Avg,
+				result.Audit,
+				result.Pass,
+				result.Fail
+			);
+			sections.push(sec);
 		}
 	}
+
 	private static checkValidID(ID: string, kind: InsightDatasetKind): boolean {
 		return (
 			ID === "" ||
