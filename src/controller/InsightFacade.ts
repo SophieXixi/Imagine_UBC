@@ -103,36 +103,40 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public performQuery(que: unknown): Promise<InsightResult[]> {
-		let query: CheckQuery;
-		query = new CheckQuery();
-		// determine if a query is a valid query
-		if (que === null) {
-			return Promise.reject(new InsightError("no input"));
-		} else if (query.checkQuery(que)) {
-			return Promise.reject(new InsightError("invalid query"));
-		} else if (!(InsightFacade.IDs.includes(query.getDataset()))) {
-			return Promise.reject(new InsightError("not valid dataset"));
-		} else {
-			// search
-			let search: SearchQuery;
+		return new Promise((resolve, reject) => {
+ 			let query: CheckQuery;
+			query = new CheckQuery(InsightFacade.IDs);
 			let quer: any = que;
-			search = new SearchQuery(quer.WHERE, InsightFacade.datasets.get(query.getDataset()));
-			let result: Section[] = search.searchQuery();
-			if (result.length >= 5000) {
-				return Promise.reject(new ResultTooLargeError("over 5000"));
-			} else {
-				return Promise.resolve(this.displayQuery(result, quer, query.getDataset()));
-			}
-		}
+			let search: SearchQuery;
+			query.checkQuery(que).then(() => {
+				search = new SearchQuery(quer.WHERE, InsightFacade.datasets.get(query.getDataset()));
+				return search.searchQuery();
+			}).then((sec) => {
+				// console.log(sec);
+				return resolve(this.displayQuery(sec, quer, query.getDataset()));
+			}).catch((err) => {
+				return reject(err);
+			});
+		});
 	}
 
-	private displayQuery(secs: Section[], query: any, id: string): Promise<InsightResult[]> {
-		let keys = Object.keys(query.OPTIONS.COLUMNS);
-		let arr = [];
+	private displayQuery(secs: Section[], query: any, id: string): InsightResult[] {
+		let arr: any[] = [];
+		let result = this.displaySections(secs, query, id, arr);
+		// console.log("here");
+		// console.log(query);
+		// console.log(query.OPTIONS);
+		let res = this.displayOrder(result, query.OPTIONS);
+		return res;
+	}
+	private displaySections(secs: Section[], query: any, id: string, arr: any[]): InsightResult[] {
+		let keys = query.OPTIONS.COLUMNS;
 		for (const sec of secs) {
-			arr.push(this.displaySection(sec, keys, id));
+			let obj = this.displaySection(sec, keys, id);
+			// console.log(obj);
+			arr.push(obj);
 		}
-		return Promise.resolve(arr);
+		return arr;
 	}
 	private displaySection(sec: Section, keys: string[], id: string): InsightResult {
 		let obj = Object.create(null);
@@ -150,7 +154,7 @@ export default class InsightFacade implements IInsightFacade {
 			} else if (key === id.concat("_instructor")) {
 				obj[key] = sec.instructor;
 			} else if (key === id.concat("_avg")) {
-				obj[key] = sec.avg;
+				obj[id.concat("_avg")] = sec.avg;
 			} else if (key === id.concat("_pass")) {
 				obj[key] = sec.pass;
 			} else if (key === id.concat("_fail")) {
@@ -160,6 +164,39 @@ export default class InsightFacade implements IInsightFacade {
 			}
 		}
 		return obj;
+	}
+
+	private displayOrder(secs: any[], obj: any): InsightResult[] {
+		// console.log("order");
+		// console.log(obj);
+		if (obj["ORDER"] === null) {
+			return secs;
+		} else {
+			for (let i = 0; i < secs.length; i++) {
+				let min = this.findMin(secs, i, obj.ORDER);
+				let s = secs[i];
+				secs[i] = secs[min];
+				secs[min] = s;
+			}
+			return secs;
+		}
+	}
+	private findMin(secs: any[], i: number, str: string): number {
+		let j = i;
+		let min: number = i;
+		while (j !== secs.length) {
+			if (typeof secs[j][str] === "string") {
+				if (secs[j][str].localeCompare(secs[min][str]) <= 0) {
+					min = j;
+				}
+			} else {
+				if (secs[j][str] <= secs[min][str]) {
+					min = j;
+				}
+			}
+			j++;
+		}
+		return min;
 	}
 
 	public listDatasets(): Promise<InsightDataset[]> {
@@ -185,20 +222,36 @@ export default class InsightFacade implements IInsightFacade {
 	private static parse(data: Awaited<any>, sections: Section[]) {
 		let parse = JSON.parse(data);
 		for (const result of parse.result) {
-			// each section is formed into section name + content
-			const sec = new Section(
-				result.id,
-				result.Course,
-				result.Title,
-				result.Professor,
-				result.Subject,
-				result.Year,
-				result.Avg,
-				result.Audit,
-				result.Pass,
-				result.Fail
-			);
-			sections.push(sec);
+			if (result.Section === "overall"){
+				const sec = new Section(
+					result.id,
+					result.Course,
+					result.Title,
+					result.Professor,
+					result.Subject,
+					1900,
+					result.Avg,
+					result.Audit,
+					result.Pass,
+					result.Fail
+				);
+				sections.push(sec);
+			} else {
+				// each section is formed into section name + content
+				const sec = new Section(
+					result.id,
+					result.Course,
+					result.Title,
+					result.Professor,
+					result.Subject,
+					result.Year,
+					result.Avg,
+					result.Audit,
+					result.Pass,
+					result.Fail
+				);
+				sections.push(sec);
+			}
 		}
 	}
 

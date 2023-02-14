@@ -1,4 +1,5 @@
 import {Section} from "./CourseHelper";
+import {ResultTooLargeError} from "./IInsightFacade";
 export class SearchQuery {
 	private query;
 	private unchecked: Section[];
@@ -8,15 +9,23 @@ export class SearchQuery {
 		this.unchecked = ds.sections;
 		this.valid_sections = [];
 	}
-	public searchQuery(): Section[] {
-		for (const sec of this.unchecked) {
-			let num: number;
-			num = this.filterSection(sec);
-			if (num === 0) {
-				this.valid_sections.push(sec);
+	public searchQuery(): Promise<Section[]> {
+		return new Promise((resolve, reject) => {
+			for (const sec of this.unchecked) {
+				let num: number;
+				num = this.filterSection(sec);
+				if (num === 0) {
+					this.valid_sections.push(sec);
+				}
 			}
-		}
-		return this.valid_sections;
+			if (this.valid_sections.length > 5000) {
+				return reject(new ResultTooLargeError("> 5000"));
+			} else {
+				// console.log("search");
+				// console.log(this.valid_sections);
+				return resolve(this.valid_sections);
+			}
+		});
 	}
 	private filterSection(sec: Section): number {
 		let arr = Object.keys(this.query);
@@ -74,33 +83,34 @@ export class SearchQuery {
 	}
 	private filterGt(obj: any, sec: Section): number {
 		let arr = Object.keys(obj);
-		let field = arr[0].substring(arr[0].search("_") + 1);
+		let array = Object.keys(obj[arr[0]]);
+		let field = array[0].substring(array[0].search("_") + 1);
 		if (field === "avg") {
-			if (sec.avg > obj.arr[0]) {
+			if (sec.avg > obj[arr[0]][array[0]]) {
 				return 0;
 			} else {
 				return 1;
 			}
 		} else if (field === "pass") {
-			if (sec.pass > obj.arr[0]) {
+			if (sec.pass > obj[arr[0]][array[0]]) {
 				return 0;
 			} else {
 				return 1;
 			}
 		} else if (field === "fail") {
-			if (sec.fail > obj.arr[0]) {
+			if (sec.fail > obj[arr[0]][array[0]]) {
 				return 0;
 			} else {
 				return 1;
 			}
 		} else if (field === "audit") {
-			if (sec.audit > obj.arr[0]) {
+			if (sec.audit > obj[arr[0]][array[0]]) {
 				return 0;
 			} else {
 				return 1;
 			}
 		} else {
-			if (sec.year > obj.arr[0]) {
+			if (sec.year > obj[arr[0]][array[0]]) {
 				return 0;
 			} else {
 				return 1;
@@ -109,33 +119,34 @@ export class SearchQuery {
 	}
 	private filterLt(obj: any, sec: Section): number {
 		let arr = Object.keys(obj);
-		let field = arr[0].substring(arr[0].search("_") + 1);
+		let array = Object.keys(obj[arr[0]]);
+		let field = arr[0].substring(array[0].search("_") + 1);
 		if (field === "avg") {
-			if (sec.avg < obj.arr[0]) {
+			if (sec.avg < obj[arr[0]][array[0]]) {
 				return 0;
 			} else {
 				return 1;
 			}
 		} else if (field === "pass") {
-			if (sec.pass < obj.arr[0]) {
+			if (sec.pass < obj[arr[0]][array[0]]) {
 				return 0;
 			} else {
 				return 1;
 			}
 		} else if (field === "fail") {
-			if (sec.fail < obj.arr[0]) {
+			if (sec.fail < obj[arr[0]][array[0]]) {
 				return 0;
 			} else {
 				return 1;
 			}
 		} else if (field === "audit") {
-			if (sec.audit < obj.arr[0]) {
+			if (sec.audit < obj[arr[0]][array[0]]) {
 				return 0;
 			} else {
 				return 1;
 			}
 		} else {
-			if (sec.year < obj.arr[0]) {
+			if (sec.year < obj[arr[0]][array[0]]) {
 				return 0;
 			} else {
 				return 1;
@@ -144,33 +155,34 @@ export class SearchQuery {
 	}
 	private filterEq(obj: any, sec: Section): number {
 		let arr = Object.keys(obj);
-		let field = arr[0].substring(arr[0].search("_") + 1);
+		let array = Object.keys(obj[arr[0]]);
+		let field = arr[0].substring(array[0].search("_") + 1);
 		if (field === "avg") {
-			if (sec.avg === obj.arr[0]) {
+			if (sec.avg === obj[arr[0]][array[0]]) {
 				return 0;
 			} else {
 				return 1;
 			}
 		} else if (field === "pass") {
-			if (sec.pass === obj.arr[0]) {
+			if (sec.pass === obj[arr[0]][array[0]]) {
 				return 0;
 			} else {
 				return 1;
 			}
 		} else if (field === "fail") {
-			if (sec.fail === obj.arr[0]) {
+			if (sec.fail === obj[arr[0]][array[0]]) {
 				return 0;
 			} else {
 				return 1;
 			}
 		} else if (field === "audit") {
-			if (sec.audit === obj.arr[0]) {
+			if (sec.audit === obj[arr[0]][array[0]]) {
 				return 0;
 			} else {
 				return 1;
 			}
 		} else {
-			if (sec.year === obj.arr[0]) {
+			if (sec.year === obj[arr[0]][array[0]]) {
 				return 0;
 			} else {
 				return 1;
@@ -179,28 +191,29 @@ export class SearchQuery {
 	}
 	private filterIs(obj: any, sec: Section): number {
 		let arr = Object.keys(obj);
+		let array = Object.keys(obj[arr[0]]);
 		let field = arr[0].substring(arr[0].search("_") + 1);
-		let str = obj.arr[0];
+		let str = obj[arr[0]][array[0]];
 		if (str.startsWith("*") && str.endsWith("*")) {
-			if (this.IsIncludes(sec, field, obj.arr[0])) {
+			if (this.IsIncludes(sec, field, obj[arr[0]][array[0]])) {
 				return 0;
 			} else {
 				return 1;
 			}
 		} else if (str.startsWith("*") && !(str.endsWith("*"))) {
-			if (this.IsEnd(sec, field, obj.arr[0])) {
+			if (this.IsEnd(sec, field, obj[arr[0]][array[0]])) {
 				return 0;
 			} else {
 				return 1;
 			}
 		} else if (!(str.startsWith("*")) && str.endsWith("*")) {
-			if (this.IsStart(sec, field, obj.arr[0])) {
+			if (this.IsStart(sec, field, obj[arr[0]][array[0]])) {
 				return 0;
 			} else {
 				return 1;
 			}
 		} else {
-			if (this.IsMatch(sec, field, obj.arr[0])) {
+			if (this.IsMatch(sec, field, obj[arr[0]][array[0]])) {
 				return 0;
 			} else {
 				return 1;
