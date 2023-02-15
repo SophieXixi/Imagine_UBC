@@ -24,7 +24,6 @@ export default class InsightFacade implements IInsightFacade {
 	private static IDs: string[];
 
 	constructor() {
-		console.log("InsightFacadeImpl::init()");
 		InsightFacade.datasets = new Map<string, Dataset>();
 		InsightFacade.IDs = [];
 		InsightFacade.checkcrash(InsightFacade.IDs, InsightFacade.datasets);
@@ -284,7 +283,6 @@ export default class InsightFacade implements IInsightFacade {
 					// datasets.set(id, dataset);
 					const sections: Section[] = [];
 					for (const sec of obj.sections){
-						console.log(sec);
 						const section = new Section(sec.uuid, sec.id, sec.title, sec.instructor,
 							sec.dept, sec.year, sec.avg,sec.pass, sec.fail,sec.audit);
 						sections.push(section);
