@@ -1,0 +1,33 @@
+{
+	"title": "complex query missing where: not-is-array",
+	"input": {
+		"WHERE": {
+			"OR": [
+				{
+					"NOT": [
+						{
+							"GT": {
+								"sections_avg": 85.9,
+								"sections_pass": 100
+							}
+						},
+						{
+							"IS": {
+								"sections_id": "210"
+							}
+						}
+					]
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": {
+				"GT": {
+					"sections_avg": 85.9
+				}
+			}
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

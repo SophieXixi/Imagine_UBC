@@ -1,0 +1,12 @@
+{
+	"title": "simple query missing options: whole",
+	"input": {
+		"WHERE": {
+			"GT": {
+				"sections_avg": 97
+			}
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}
