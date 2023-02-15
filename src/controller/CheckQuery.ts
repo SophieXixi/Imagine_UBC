@@ -221,7 +221,7 @@ export class CheckQuery {
 		field = str.substring(div + 1);
 		if (type.includes("s")) {
 			if (field === "dept" || field === "id" || field === "uuid" ||
-			field === "instructor" || field === "title") {
+				field === "instructor" || field === "title") {
 				return 0;
 			}
 		}
