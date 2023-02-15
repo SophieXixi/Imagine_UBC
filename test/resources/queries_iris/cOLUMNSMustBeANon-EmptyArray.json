@@ -1,0 +1,16 @@
+{
+	"title": "COLUMNS must be a non-empty array",
+	"input": {
+		"WHERE": {
+			"GT": {
+				"sections_avg": 98
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [],
+			"ORDER": "sections_dept"
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}
