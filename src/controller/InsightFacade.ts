@@ -1,11 +1,5 @@
-import {
-	IInsightFacade,
-	InsightDataset,
-	InsightDatasetKind,
-	InsightError,
-	InsightResult,
-	NotFoundError, ResultTooLargeError,
-} from "./IInsightFacade";
+import {IInsightFacade, InsightDataset, InsightDatasetKind, InsightError, InsightResult, NotFoundError, ResultTooLargeError}
+	from "./IInsightFacade";
 import JSZip from "jszip";
 import {Section} from "./CourseHelper";
 import {Dataset} from "./DatasetHelper";
@@ -33,7 +27,6 @@ export default class InsightFacade implements IInsightFacade {
 		let promises: any[] = [];
 		let sections: Section[] = [];
 		return new Promise((fulfill, reject) => {
-			// * Base Case Invalid ID Tests
 			if (InsightFacade.checkValidID(ID, kind)) {
 				return reject(new InsightError("Invalid Dataset ID!"));
 			}
@@ -43,39 +36,29 @@ export default class InsightFacade implements IInsightFacade {
 				.then(function (zip) {
 					try {
 						zip.folder("courses")?.forEach((relativePath: string, file: any) => {
-							// access all files in the folder
 							promises.push(file.async("text"));
 						});
-						// **check dataset size, reject empty dataset/wrong folder name
 						if (promises.length === 0) {
 							return reject(new InsightError("Empty dataset! Reject!"));
 						}
 					} catch {
-						/* empty */
+						return reject(new InsightError("Cannot open folder! Reject!"));
 					}
 					Promise.all(promises)
 						.then((results) => {
-							for (const data of results) {
-								try {
-									InsightFacade.parse(data, sections);
-								} catch {
-									return reject(new InsightError("Not able to parse, Invalid JSON file/not JSON!"));
-								}
-							}
-							if (sections.length === 0) {
-								return reject(new Error("No valid section! Bad Dataset"));
+							let res = InsightFacade.eachfile(results, sections);
+							if (sections.length === 0 || res) {
+								return reject(new InsightError("No valid section! Bad Dataset"));
 							}
 							let dataset = new Dataset(ID, sections);
 							const re = InsightFacade.store(ID, dataset);
 							return fulfill(re);
 						})
 						.catch((err) => {
-							// * not a zip file, reject
 							return reject(err);
 						});
 				})
 				.catch(() => {
-					// **not a zip file, reject
 					return reject(new InsightError("Not a zip file, failed to load!"));
 				});
 		});
@@ -83,15 +66,12 @@ export default class InsightFacade implements IInsightFacade {
 
 	public removeDataset(id: string): Promise<string> {
 		return new Promise((fulfill, reject) => {
-			if (id === "" || id === " " || id.includes("_")) {
+			if (id === "" || !id.trim() || id.includes("_")) {
 				return reject(new InsightError("Invalid Dataset ID!"));
 			}
 			if (!InsightFacade.IDs.includes(id)) {
 				return reject(new NotFoundError("Non-exist Dateset ID!"));
 			}
-			// delete id from id-list
-			delete InsightFacade.IDs[InsightFacade.IDs.indexOf(id)];
-			// delete from dataset
 			fs.unlinkSync("./data/" + id + ".json");
 			InsightFacade.datasets.delete(id);
 			const index = InsightFacade.IDs.indexOf(id, 0);
@@ -108,39 +88,39 @@ export default class InsightFacade implements IInsightFacade {
 			query = new CheckQuery(InsightFacade.IDs);
 			let quer: any = que;
 			let search: SearchQuery;
-			query.checkQuery(que).then(() => {
-				search = new SearchQuery(quer.WHERE, InsightFacade.datasets.get(query.getDataset()));
-				return search.searchQuery();
-			}).then((sec) => {
-				// console.log(sec);
-				return resolve(this.displayQuery(sec, quer, query.getDataset()));
-			}).catch((err) => {
-				return reject(err);
-			});
+			query
+				.checkQuery(que)
+				.then(() => {
+					search = new SearchQuery(quer.WHERE, InsightFacade.datasets.get(query.getDataset()));
+					return search.searchQuery();
+				})
+				.then((sec) => {
+					// console.log(sec);
+					return resolve(this.displayQuery(sec, quer, query.getDataset()));
+				})
+				.catch((err) => {
+					return reject(err);
+				});
 		});
 	}
 
 	private displayQuery(secs: Section[], query: any, id: string): InsightResult[] {
 		let arr: any[] = [];
 		let result = this.displaySections(secs, query, id, arr);
-		// console.log("here");
-		// console.log(query);
-		// console.log(query.OPTIONS);
-		let res = this.displayOrder(result, query.OPTIONS);
+		return this.displayOrder(result, query.OPTIONS);
 		return res;
 	}
 	private displaySections(secs: Section[], query: any, id: string, arr: any[]): InsightResult[] {
 		let keys = query.OPTIONS.COLUMNS;
 		for (const sec of secs) {
 			let obj = this.displaySection(sec, keys, id);
-			// console.log(obj);
 			arr.push(obj);
 		}
 		return arr;
 	}
 	private displaySection(sec: Section, keys: string[], id: string): InsightResult {
 		let obj = Object.create(null);
-		for(const key of keys) {
+		for (const key of keys) {
 			if (key === id.concat("_uuid")) {
 				obj[key] = sec.uuid;
 			} else if (key === id.concat("_year")) {
@@ -167,8 +147,6 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	private displayOrder(secs: any[], obj: any): InsightResult[] {
-		// console.log("order");
-		// console.log(obj);
 		if (obj["ORDER"] === null) {
 			return secs;
 		} else {
@@ -220,47 +198,12 @@ export default class InsightFacade implements IInsightFacade {
 		return this.IDs;
 	}
 
-	private static parse(data: Awaited<any>, sections: Section[]) {
-		let parse = JSON.parse(data);
-		for (const result of parse.result) {
-			if (result.Section === "overall"){
-				const sec = new Section(
-					result.id.toString(),
-					result.Course,
-					result.Title,
-					result.Professor,
-					result.Subject,
-					1900,
-					result.Avg,
-					result.Audit,
-					result.Pass,
-					result.Fail
-				);
-				sections.push(sec);
-			} else {
-				const yr = +result.Year;
-				// each section is formed into section name + content
-				const sec = new Section(
-					result.id.toString(),
-					result.Course,
-					result.Title,
-					result.Professor,
-					result.Subject,
-					yr,
-					result.Avg,
-					result.Audit,
-					result.Pass,
-					result.Fail
-				);
-				sections.push(sec);
-			}
-		}
-	}
-
 	private static checkValidID(ID: string, kind: InsightDatasetKind): boolean {
 		return (
-			ID === "" ||
-			ID === " " ||
+			// empty string case
+			ID === null ||
+			ID === undefined ||
+			!ID.trim() ||
 			ID.includes("_") ||
 			InsightFacade.IDs.includes(ID) ||
 			fs.existsSync("./data/" + ID + ".json") ||
@@ -279,10 +222,78 @@ export default class InsightFacade implements IInsightFacade {
 				}
 				if (!datasets.has(id)) {
 					const obj = fs.readJsonSync("./data/" + id + ".json");
-					const dataset = new Dataset(id, obj.sections);
+					const sections: Section[] = [];
+					for (const sec of obj.sections) {
+						const section = new Section(
+							sec.uuid,
+							sec.id,
+							sec.title,
+							sec.instructor,
+							sec.dept,
+							sec.year,
+							sec.avg,
+							sec.pass,
+							sec.fail,
+							sec.audit
+						);
+						sections.push(section);
+					}
+					const dataset = new Dataset(id, sections);
 					datasets.set(id, dataset);
 				}
 			});
 		}
+	}
+
+	private static eachfile(results: any[], sections: Section[]): boolean {
+		for (const data of results) {
+			let err: number = 0;
+			try {
+				let parse = JSON.parse(data);
+				for (const result of parse.result) {
+					if (
+						!(
+							result.id === undefined ||
+							result.Course === undefined ||
+							result.Title === undefined ||
+							result.Professor === undefined ||
+							result.Subject === undefined ||
+							result.Section === undefined ||
+							result.Avg === undefined ||
+							result.Audit === undefined ||
+							result.Pass === undefined ||
+							result.Fail === undefined
+						)
+					) {
+						let yr: number = 0;
+						if (result.Section === "overall") {
+							yr = 1900;
+						} else {
+							yr = +result.Year;
+						}
+						// each section is formed into section name + content
+						const sec = new Section(
+							result.id.toString(),
+							result.Course,
+							result.Title,
+							result.Professor,
+							result.Subject,
+							yr,
+							result.Avg,
+							result.Audit,
+							result.Pass,
+							result.Fail
+						);
+						sections.push(sec);
+					}
+				}
+			} catch {
+				err += 1;
+			}
+			if (err === results.length) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
