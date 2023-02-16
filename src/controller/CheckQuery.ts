@@ -227,11 +227,8 @@ export class CheckQuery {
 			}
 		}
 		if (type.includes("m")) {
-			// console.log("key-m");
-			// console.log(field);
 			if (field === "avg" || field === "pass" || field === "fail" ||
 				field === "audit" || field === "year") {
-				// console.log("key-m-if");
 				return 0;
 			}
 		}
