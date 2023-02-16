@@ -4,7 +4,7 @@ import {
 	InsightDatasetKind,
 	InsightError,
 	InsightResult,
-	NotFoundError, ResultTooLargeError,
+	NotFoundError,
 } from "./IInsightFacade";
 import JSZip from "jszip";
 import {Section} from "./CourseHelper";
@@ -12,6 +12,7 @@ import {Dataset} from "./DatasetHelper";
 import * as fs from "fs-extra";
 import {CheckQuery} from "./CheckQuery";
 import {SearchQuery} from "./SearchQuery";
+
 
 /**
  * This is the main programmatic entry point for the project.
@@ -23,7 +24,6 @@ export default class InsightFacade implements IInsightFacade {
 	private static IDs: string[];
 
 	constructor() {
-		console.log("InsightFacadeImpl::init()");
 		InsightFacade.datasets = new Map<string, Dataset>();
 		InsightFacade.IDs = [];
 		InsightFacade.checkcrash(InsightFacade.IDs, InsightFacade.datasets);
@@ -83,7 +83,7 @@ export default class InsightFacade implements IInsightFacade {
 
 	public removeDataset(id: string): Promise<string> {
 		return new Promise((fulfill, reject) => {
-			if (id === "" || id === " " || id.includes("_")) {
+			if (id === "" || (!id.trim()) || id.includes("_")) {
 				return reject(new InsightError("Invalid Dataset ID!"));
 			}
 			if (!InsightFacade.IDs.includes(id)) {
@@ -104,15 +104,17 @@ export default class InsightFacade implements IInsightFacade {
 
 	public performQuery(que: unknown): Promise<InsightResult[]> {
 		return new Promise((resolve, reject) => {
- 			let query: CheckQuery;
+			let query: CheckQuery;
 			query = new CheckQuery(InsightFacade.IDs);
 			let quer: any = que;
 			let search: SearchQuery;
 			query.checkQuery(que).then(() => {
+				console.log(query.getDataset());
 				search = new SearchQuery(quer.WHERE, InsightFacade.datasets.get(query.getDataset()));
+				console.log("search");
 				return search.searchQuery();
 			}).then((sec) => {
-				// console.log(sec);
+				console.log("display");
 				return resolve(this.displayQuery(sec, quer, query.getDataset()));
 			}).catch((err) => {
 				return reject(err);
@@ -126,8 +128,7 @@ export default class InsightFacade implements IInsightFacade {
 		// console.log("here");
 		// console.log(query);
 		// console.log(query.OPTIONS);
-		let res = this.displayOrder(result, query.OPTIONS);
-		return res;
+		return this.displayOrder(result, query.OPTIONS);
 	}
 	private displaySections(secs: Section[], query: any, id: string, arr: any[]): InsightResult[] {
 		let keys = query.OPTIONS.COLUMNS;
@@ -259,8 +260,11 @@ export default class InsightFacade implements IInsightFacade {
 
 	private static checkValidID(ID: string, kind: InsightDatasetKind): boolean {
 		return (
+			// empty string case
+			ID === null ||
+			ID === undefined ||
+			(!ID.trim()) ||
 			ID === "" ||
-			ID === " " ||
 			ID.includes("_") ||
 			InsightFacade.IDs.includes(ID) ||
 			fs.existsSync("./data/" + ID + ".json") ||
@@ -279,8 +283,16 @@ export default class InsightFacade implements IInsightFacade {
 				}
 				if (!datasets.has(id)) {
 					const obj = fs.readJsonSync("./data/" + id + ".json");
-					const dataset = new Dataset(id, obj.sections);
-					datasets.set(id, dataset);
+					// const dataset = new Dataset(id, obj.sections);
+					// datasets.set(id, dataset);
+					const sections: Section[] = [];
+					for (const sec of obj.sections){
+						const section = new Section(sec.uuid, sec.id, sec.title, sec.instructor,
+							sec.dept, sec.year, sec.avg,sec.pass, sec.fail,sec.audit);
+						sections.push(section);
+					}
+					const dataset = new Dataset(id,sections);
+					datasets.set(id,dataset);
 				}
 			});
 		}
