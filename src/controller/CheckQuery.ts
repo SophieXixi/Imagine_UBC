@@ -73,12 +73,10 @@ export class CheckQuery {
 		if (item === "OR") {
 			// console.log("or:");
 			res = this.checkQueryOrAnd(obj.OR);
-			// console.log("or-result");
 			// console.log(res);
 		} else if (item === "AND") {
 			// console.log("and:");
 			res = this.checkQueryOrAnd(obj.AND);
-			// console.log("and-result");
 			// console.log(res);
 		} else if (item === "GT") {
 			res = this.checkQueryGtLtEq(obj.GT);
