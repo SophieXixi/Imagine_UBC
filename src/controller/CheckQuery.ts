@@ -107,7 +107,7 @@ export class CheckQuery {
 		return res;
 	}
 	private checkQueryOrAnd(arr: any): number {
-		if (!(Array.isArray(arr))) {
+		if (!Array.isArray(arr)) {
 			// console.log("or-array");
 			return 1;
 		} else if (arr.length === 0) {
@@ -192,7 +192,7 @@ export class CheckQuery {
 				}
 				if (obj[arr[0]].includes("*")) {
 					if (obj[arr[0]].length > 2) {
-						if ((obj[arr[0]].substring(1, obj[arr[0]].length - 1)).includes("*")) {
+						if (obj[arr[0]].substring(1, obj[arr[0]].length - 1).includes("*")) {
 							// console.log("is-include*");
 							return 1;
 						}
@@ -215,23 +215,21 @@ export class CheckQuery {
 		} else if (this.dataset !== str.substring(0, div)) {
 			// console.log("key-dataset");
 			return 1;
-		} else if (!(this.ids.includes(this.dataset))) {
+		} else if (!this.ids.includes(this.dataset)) {
 			return 1;
 		}
 		// check field
 		let field: string;
 		field = str.substring(div + 1);
 		if (type.includes("s")) {
-			if (field === "dept" || field === "id" || field === "uuid" ||
-				field === "instructor" || field === "title") {
+			if (field === "dept" || field === "id" || field === "uuid" || field === "instructor" || field === "title") {
 				return 0;
 			}
 		}
 		if (type.includes("m")) {
 			// console.log("key-m");
 			// console.log(field);
-			if (field === "avg" || field === "pass" || field === "fail" ||
-				field === "audit" || field === "year") {
+			if (field === "avg" || field === "pass" || field === "fail" || field === "audit" || field === "year") {
 				// console.log("key-m-if");
 				return 0;
 			}
@@ -258,7 +256,7 @@ export class CheckQuery {
 		if (typeof obj.ORDER !== "string") {
 			return 1;
 		} else {
-			if (!(obj.COLUMNS.includes(obj.ORDER))) {
+			if (!obj.COLUMNS.includes(obj.ORDER)) {
 				return 1;
 			} else {
 				return 0;
