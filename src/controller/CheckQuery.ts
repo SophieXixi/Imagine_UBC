@@ -1,5 +1,6 @@
 import {InsightError, InsightResult} from "./IInsightFacade";
 import {rejects} from "assert";
+import InsightFacade from "./InsightFacade";
 
 export class CheckQuery {
 	private dataset: string;
@@ -16,30 +17,24 @@ export class CheckQuery {
 	 */
 	public checkQuery(que: unknown): Promise<any> {
 		return new Promise((resolve, reject) => {
-			if (que === null) {
+			if (que === null || typeof que !== "object") {
 				return reject(new InsightError("invalid"));
 			}
-			// check type
-			if (typeof que !== "object") {
-				return reject(new InsightError("invalid"));
-			}
-			// console.log("before where");
 			let query: any = que as any;
 			// check where
 			if (query.WHERE !== null) {
-				// console.log("query-where");
 				if (typeof query.WHERE !== "object" || Array.isArray(query.WHERE)) {
-					// console.log("query-where-type");
 					return reject(new InsightError("invalid"));
 				}
-				let arr;
-				arr = Object.keys(query.WHERE);
-				for (const item of arr) {
-					let res: number;
-					res = this.checkFilter(item, query.WHERE);
-					if (res === 1) {
-						return reject(new InsightError("invalid"));
-					}
+				let arr = Object.keys(query.WHERE);
+				if (arr.length > 1) {
+					return reject(new InsightError("invalid"));
+				} else if (arr.length === 0) {
+					return resolve("done");
+				}
+				let res: number = this.checkFilter(arr[0], query.WHERE);
+				if (res === 1) {
+					return reject(new InsightError("invalid"));
 				}
 			}
 			// check options
@@ -49,18 +44,22 @@ export class CheckQuery {
 				let array;
 				array = Object.keys(query.OPTIONS);
 				if (!array.includes("COLUMNS")) {
-					// console.log("query-options-column");
 					return reject(new InsightError("invalid"));
 				} else {
-					let res = this.checkColumn(query.OPTIONS.COLUMNS);
-					if (res === 1) {
-						return reject(new InsightError("invalid"));
-					}
-				}
-				if (array.includes("ORDER")) {
-					let res: number = this.checkOrder(query.OPTIONS);
-					if (res === 1) {
-						return reject(new InsightError("invalid"));
+					for (const ele of array) {
+						if (ele === "COLUMNS") {
+							let res = this.checkColumn(query.OPTIONS.COLUMNS);
+							if (res === 1) {
+								return reject(new InsightError("invalid"));
+							}
+						} else if (ele === "ORDER") {
+							let res: number = this.checkOrder(query.OPTIONS);
+							if (res === 1) {
+								return reject(new InsightError("invalid"));
+							}
+						} else {
+							return reject(new InsightError("invalid"));
+						}
 					}
 				}
 			}
@@ -103,7 +102,7 @@ export class CheckQuery {
 			// console.log("not-result");
 			// console.log(res);
 		} else {
-			res = 0;
+			res = 1;
 		}
 		return res;
 	}
@@ -117,6 +116,9 @@ export class CheckQuery {
 			for (const obj of arr) {
 				let array;
 				array = Object.keys(obj);
+				if (array.length === 0) {
+					return 1;
+				}
 				for (const key of array) {
 					let result: number;
 					result = this.checkFilter(key, obj);
