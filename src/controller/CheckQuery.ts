@@ -30,11 +30,12 @@ export class CheckQuery {
 				if (arr.length > 1) {
 					return reject(new InsightError("invalid"));
 				} else if (arr.length === 0) {
-					return resolve("done");
-				}
-				let res: number = this.checkFilter(arr[0], query.WHERE);
-				if (res === 1) {
-					return reject(new InsightError("invalid"));
+					// do nothing
+				} else {
+					let res: number = this.checkFilter(arr[0], query.WHERE);
+					if (res === 1) {
+						return reject(new InsightError("invalid"));
+					}
 				}
 			}
 			// check options
@@ -223,7 +224,7 @@ export class CheckQuery {
 		field = str.substring(div + 1);
 		if (type.includes("s")) {
 			if (field === "dept" || field === "id" || field === "uuid" ||
-			field === "instructor" || field === "title") {
+				field === "instructor" || field === "title") {
 				return 0;
 			}
 		}
