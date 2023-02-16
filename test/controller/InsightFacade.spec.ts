@@ -3,8 +3,7 @@ import {
 	InsightDatasetKind,
 	InsightError,
 	InsightResult,
-	NotFoundError,
-	ResultTooLargeError,
+	ResultTooLargeError
 } from "../../src/controller/IInsightFacade";
 import InsightFacade from "../../src/controller/InsightFacade";
 
@@ -20,29 +19,10 @@ describe("InsightFacade", function () {
 
 	// Declare datasets used in tests. You should add more datasets like this!
 	let sections: string;
-	let nonzip: string;
-	let dup: string;
-	let small: string;
-	let notjson: string;
-	let empty: string;
-	let invalidjson: string;
-	let wrongfolder: string;
-	let novalidsection: string;
-	let missingfield: string;
 
 	before(function () {
 		// This block runs once and loads the datasets.
 		sections = getContentFromArchives("pair.zip");
-
-		small = getContentFromArchives("courses.zip");
-		nonzip = getContentFromArchives("CPSC330.pdf");
-		dup = getContentFromArchives("dup.zip");
-		notjson = getContentFromArchives("notjson.zip");
-		empty = getContentFromArchives("empty.zip");
-		invalidjson = getContentFromArchives("invalidjson.zip");
-		wrongfolder = getContentFromArchives("wrongfolder.zip");
-		novalidsection = getContentFromArchives("novalidsection.zip");
-		missingfield = getContentFromArchives("missingfield.zip");
 
 		// Just in case there is anything hanging around from a previous run of the test suite
 		clearDisk();
@@ -372,7 +352,9 @@ describe("InsightFacade", function () {
 
 			// Load the datasets specified in datasetsToQuery and add them to InsightFacade.
 			// Will *fail* if there is a problem reading ANY dataset.
-			const loadDatasetPromises = [facade.addDataset("sections", sections, InsightDatasetKind.Sections)];
+			const loadDatasetPromises = [
+				facade.addDataset("sections", sections, InsightDatasetKind.Sections),
+			];
 
 			return Promise.all(loadDatasetPromises);
 		});
@@ -381,7 +363,42 @@ describe("InsightFacade", function () {
 			console.info(`After: ${this.test?.parent?.title}`);
 			clearDisk();
 		});
+/*
+		// nothing passed in
+		it("performQuery: nothing passes in",
+			function() {
+				const result = facade.performQuery(null);
+				return expect(result).to.eventually.be.rejectedWith(InsightError);
+			});
 
+		// passed in empty string
+		it("performQuery: passes in an empty string",
+			function() {
+				const result = facade.performQuery("");
+				return expect(result).to.eventually.be.rejectedWith(InsightError);
+			});
+
+		// passed in a number
+		it("performQuery: passes in a number",
+			function() {
+				const result = facade.performQuery(5);
+				return expect(result).to.eventually.be.rejectedWith(InsightError);
+			});
+
+		// passed in an array
+		it("performQuery: passes in an array",
+			function() {
+				const result = facade.performQuery({});
+				return expect(result).to.eventually.be.rejectedWith(InsightError);
+			});
+
+		// passed in an empty string
+		it("performQuery: passes in a whitespace string",
+			function() {
+				const result = facade.performQuery("    ");
+				return expect(result).to.eventually.be.rejectedWith(InsightError);
+			});
+*/
 		type Input = unknown;
 		type Output = Promise<InsightResult[]>;
 		type Error = "InsightError" | "ResultTooLargeError";
@@ -395,7 +412,7 @@ describe("InsightFacade", function () {
 				expect(actual).to.be.instanceof(InsightError);
 			} else if (expected === "ResultTooLargeError") {
 				expect(actual).to.be.instanceof(ResultTooLargeError);
-			} else {
+			} else{
 				expect.fail("there is an unexpected error");
 			}
 		}
@@ -414,47 +431,6 @@ describe("InsightFacade", function () {
 				assertOnResult
 			}
 		);
-
-	});
-
-	describe("PerformQuery", () => {
-
-		before(function () {
-			console.info(`Before: ${this.test?.parent?.title}`);
-			facade = new InsightFacade();
-			// Load the datasets specified in datasetsToQuery and add them to InsightFacade.
-			// Will *fail* if there is a problem reading ANY dataset.
-			const loadDatasetPromises = [facade.addDataset("sections", sections, InsightDatasetKind.Sections)];
-			return Promise.all(loadDatasetPromises);
-		});
-
-		after(function () {
-			console.info(`After: ${this.test?.parent?.title}`);
-			clearDisk();
-		});
-
-		type Input = unknown;
-		type Output = Promise<InsightResult[]>;
-		type Error = "InsightError" | "ResultTooLargeError";
-		let FACADE = new InsightFacade();
-
-		function errorValidator(error: any): error is Error {
-			return error === "InsightError" || error === "ResultTooLargeError";
-		}
-
-		function assertOnError(actual: any, expected: Error): void {
-			if (expected === "InsightError") {
-				expect(actual).to.be.instanceof(InsightError);
-			} else if (expected === "ResultTooLargeError") {
-				expect(actual).to.be.instanceof(ResultTooLargeError);
-			} else {
-				expect.fail("there is an unexpected error");
-			}
-		}
-
-		function assertOnResult(actual: unknown, expected: Output): void {
-			expect(actual).to.deep.equal(expected);
-		}
 
 		folderTest<Input, Output, Error>(
 			"Dynamic InsightFacade PerformQuery tests - simple",
