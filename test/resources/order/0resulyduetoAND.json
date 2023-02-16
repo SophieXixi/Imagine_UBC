@@ -1,0 +1,41 @@
+{
+	"title": "0resulyduetoAND",
+	"input": {
+		"WHERE": {
+			"OR": [
+				{
+					"AND": [
+						{
+							"OR": [
+								{
+									"AND": [
+										{
+											"GT": {
+												"sections_avg": 90
+											}
+										},
+										{
+											"EQ": {
+												"sections_avg": 80
+											}
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept",
+				"sections_id",
+				"sections_avg"
+			],
+			"ORDER": "sections_avg"
+		}
+	},
+	"errorExpected": false,
+	"expected": []
+}

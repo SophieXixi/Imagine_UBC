@@ -1,0 +1,32 @@
+{
+	"title": "Invalid key sections_key in COLUMNS",
+	"input": {
+		"WHERE": {
+			"NOT": {
+				"OR": [
+					{
+						"LT": {
+							"sections_avg": 99
+						}
+					},
+					{
+						"IS": {
+							"sections_dept": "adhe"
+						}
+					}
+				]
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept",
+				"sections_id",
+				"sections_avg",
+				"sections_key"
+			],
+			"ORDER": "sections_avg"
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}
