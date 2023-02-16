@@ -211,9 +211,7 @@ export default class InsightFacade implements IInsightFacade {
 
 	private static store(ID: string, dataset: Dataset): string[] {
 		fs.ensureDirSync("./data");
-		console.log(dataset);
 		const json = JSON.stringify(dataset);
-		console.log(json);
 		fs.writeFileSync("./data/" + dataset.id + ".json", json);
 		this.datasets.set(ID, dataset);
 		this.IDs.push(ID);
