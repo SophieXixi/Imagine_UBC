@@ -1,0 +1,19 @@
+{
+	"title": "simple query success: gt-audit",
+	"input": {
+		"WHERE": {
+			"GT": {
+				"sections_audit": 100
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept",
+				"sections_avg"
+			],
+			"ORDER": "sections_avg"
+		}
+	},
+	"errorExpected": false,
+	"expected": []
+}

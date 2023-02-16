@@ -3,8 +3,7 @@ import {
 	InsightDatasetKind,
 	InsightError,
 	InsightResult,
-	NotFoundError,
-	ResultTooLargeError,
+	ResultTooLargeError
 } from "../../src/controller/IInsightFacade";
 import InsightFacade from "../../src/controller/InsightFacade";
 
@@ -592,4 +591,132 @@ describe("InsightFacade", function () {
 	// 		}
 	// 	);
 	// });
+	// 	it("crash remove check", async function () {
+	// 		// Setup
+	// 		await facade.addDataset("sev1", small, InsightDatasetKind.Sections);
+	// 		// Execution
+	// 		const fnew = new InsightFacade();
+	// 		await fnew.addDataset("sev2", small, InsightDatasetKind.Sections);
+	// 		await fnew.addDataset("noneed", small, InsightDatasetKind.Sections);
+	// 		const fag = new InsightFacade();
+	// 		await fag.removeDataset("noneed");
+	// 		const datasets = await fag.listDatasets();
+	// 		// Validation
+	// 		expect(datasets).to.be.an.instanceOf(Array);
+	// 		expect(datasets).to.have.length(2);
+	// 		const course = datasets.find((dataset) => dataset.id === "sev1");
+	// 		expect(course).to.exist;
+	// 		expect(course).to.deep.equal({
+	// 			id: "sev1",
+	// 			kind: InsightDatasetKind.Sections,
+	// 			numRows: 2,
+	// 		});
+	// 	});
+	});
+
+	/*
+	 * This test suite dynamically generates tests from the JSON files in test/resources/queries.
+	 * You should not need to modify it; instead, add additional files to the queries directory.
+	 * You can still make tests the normal way, this is just a convenient tool for a majority of queries.
+	 */
+	describe("PerformQuery", () => {
+
+		before(function () {
+			console.info(`Before: ${this.test?.parent?.title}`);
+
+			facade = new InsightFacade();
+
+			// Load the datasets specified in datasetsToQuery and add them to InsightFacade.
+			// Will *fail* if there is a problem reading ANY dataset.
+			const loadDatasetPromises = [
+				facade.addDataset("sections", sections, InsightDatasetKind.Sections),
+			];
+
+			return Promise.all(loadDatasetPromises);
+		});
+
+		after(function () {
+			console.info(`After: ${this.test?.parent?.title}`);
+			clearDisk();
+		});
+/*
+		// nothing passed in
+		it("performQuery: nothing passes in",
+			function() {
+				const result = facade.performQuery(null);
+				return expect(result).to.eventually.be.rejectedWith(InsightError);
+			});
+
+		// passed in empty string
+		it("performQuery: passes in an empty string",
+			function() {
+				const result = facade.performQuery("");
+				return expect(result).to.eventually.be.rejectedWith(InsightError);
+			});
+
+		// passed in a number
+		it("performQuery: passes in a number",
+			function() {
+				const result = facade.performQuery(5);
+				return expect(result).to.eventually.be.rejectedWith(InsightError);
+			});
+
+		// passed in an array
+		it("performQuery: passes in an array",
+			function() {
+				const result = facade.performQuery({});
+				return expect(result).to.eventually.be.rejectedWith(InsightError);
+			});
+
+		// passed in an empty string
+		it("performQuery: passes in a whitespace string",
+			function() {
+				const result = facade.performQuery("    ");
+				return expect(result).to.eventually.be.rejectedWith(InsightError);
+			});
+*/
+		type Input = unknown;
+		type Output = Promise<InsightResult[]>;
+		type Error = "InsightError" | "ResultTooLargeError";
+
+		function errorValidator(error: any): error is Error {
+			return error === "InsightError" || error === "ResultTooLargeError";
+		}
+
+		function assertOnError(actual: any, expected: Error): void {
+			if (expected === "InsightError") {
+				expect(actual).to.be.instanceof(InsightError);
+			} else if (expected === "ResultTooLargeError") {
+				expect(actual).to.be.instanceof(ResultTooLargeError);
+			} else{
+				expect.fail("there is an unexpected error");
+			}
+		}
+
+		function assertOnResult(actual: unknown, expected: Output): void {
+			expect(actual).to.deep.equal(expected);
+		}
+
+		folderTest<Input, Output, Error>(
+			"Dynamic InsightFacade PerformQuery tests - simple",
+			(input) => facade.performQuery(input),
+			"./test/resources/no order",
+			{
+				errorValidator,
+				assertOnError,
+				assertOnResult
+			}
+		);
+
+		folderTest<Input, Output, Error>(
+			"Dynamic InsightFacade PerformQuery tests - simple",
+			(input) => FACADE.performQuery(input),
+			"./test/resources/invalid",
+			{
+				errorValidator,
+				assertOnError,
+				assertOnResult
+			}
+		);
+	});
 });

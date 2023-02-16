@@ -1,4 +1,4 @@
-import {IInsightFacade, InsightDataset, InsightDatasetKind, InsightError, InsightResult, NotFoundError,}
+import {IInsightFacade, InsightDataset, InsightDatasetKind, InsightError, InsightResult, NotFoundError, ResultTooLargeError}
 	from "./IInsightFacade";
 import JSZip from "jszip";
 import {Section} from "./CourseHelper";
@@ -17,6 +17,7 @@ export default class InsightFacade implements IInsightFacade {
 	private static IDs: string[];
 
 	constructor() {
+		console.log("InsightFacadeImpl::init()");
 		InsightFacade.datasets = new Map<string, Dataset>();
 		InsightFacade.IDs = [];
 		InsightFacade.checkcrash(InsightFacade.IDs, InsightFacade.datasets);
@@ -83,7 +84,7 @@ export default class InsightFacade implements IInsightFacade {
 
 	public performQuery(que: unknown): Promise<InsightResult[]> {
 		return new Promise((resolve, reject) => {
-			let query: CheckQuery;
+ 			let query: CheckQuery;
 			query = new CheckQuery(InsightFacade.IDs);
 			let quer: any = que;
 			let search: SearchQuery;
@@ -107,6 +108,7 @@ export default class InsightFacade implements IInsightFacade {
 		let arr: any[] = [];
 		let result = this.displaySections(secs, query, id, arr);
 		return this.displayOrder(result, query.OPTIONS);
+		return res;
 	}
 	private displaySections(secs: Section[], query: any, id: string, arr: any[]): InsightResult[] {
 		let keys = query.OPTIONS.COLUMNS;
@@ -173,6 +175,7 @@ export default class InsightFacade implements IInsightFacade {
 			j++;
 		}
 		return min;
+		// return secs.sort();
 	}
 
 	public listDatasets(): Promise<InsightDataset[]> {
@@ -201,7 +204,6 @@ export default class InsightFacade implements IInsightFacade {
 			ID === null ||
 			ID === undefined ||
 			!ID.trim() ||
-			ID === "" ||
 			ID.includes("_") ||
 			InsightFacade.IDs.includes(ID) ||
 			fs.existsSync("./data/" + ID + ".json") ||
@@ -220,8 +222,6 @@ export default class InsightFacade implements IInsightFacade {
 				}
 				if (!datasets.has(id)) {
 					const obj = fs.readJsonSync("./data/" + id + ".json");
-					// const dataset = new Dataset(id, obj.sections);
-					// datasets.set(id, dataset);
 					const sections: Section[] = [];
 					for (const sec of obj.sections) {
 						const section = new Section(

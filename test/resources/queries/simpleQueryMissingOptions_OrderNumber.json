@@ -1,0 +1,19 @@
+{
+	"title": "simple query missing options: order number",
+	"input": {
+		"WHERE": {
+			"GT": {
+				"sections_avg": 97
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_id",
+				"sections_avg"
+			],
+			"ORDER": 1
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}
