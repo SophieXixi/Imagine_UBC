@@ -211,7 +211,9 @@ export default class InsightFacade implements IInsightFacade {
 
 	private static store(ID: string, dataset: Dataset): string[] {
 		fs.ensureDirSync("./data");
+		console.log(dataset);
 		const json = JSON.stringify(dataset);
+		console.log(json);
 		fs.writeFileSync("./data/" + dataset.id + ".json", json);
 		this.datasets.set(ID, dataset);
 		this.IDs.push(ID);
@@ -223,7 +225,7 @@ export default class InsightFacade implements IInsightFacade {
 		for (const result of parse.result) {
 			if (result.Section === "overall"){
 				const sec = new Section(
-					result.id,
+					result.id.toString(),
 					result.Course,
 					result.Title,
 					result.Professor,
@@ -236,14 +238,15 @@ export default class InsightFacade implements IInsightFacade {
 				);
 				sections.push(sec);
 			} else {
+				const yr = +result.Year;
 				// each section is formed into section name + content
 				const sec = new Section(
-					result.id,
+					result.id.toString(),
 					result.Course,
 					result.Title,
 					result.Professor,
 					result.Subject,
-					result.Year,
+					yr,
 					result.Avg,
 					result.Audit,
 					result.Pass,

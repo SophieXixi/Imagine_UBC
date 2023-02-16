@@ -21,7 +21,6 @@ export class SearchQuery {
 			if (this.valid_sections.length > 5000) {
 				return reject(new ResultTooLargeError("> 5000"));
 			} else {
-				console.log("search");
 				console.log(this.valid_sections.length);
 				return resolve(this.valid_sections);
 			}
@@ -29,6 +28,9 @@ export class SearchQuery {
 	}
 	private filterSection(sec: Section): number {
 		let arr = Object.keys(this.query);
+		if (arr.length === 0) {
+			return 0;
+		}
 		for (const key of arr) {
 			let res = this.filterKey(sec, key, this.query);
 			if (res) {

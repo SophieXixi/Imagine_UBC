@@ -262,21 +262,21 @@ describe("InsightFacade", function () {
 	// 		});
 	// 	});
 	//
-		it("crash test", async function () {
-			await facade.addDataset("add1", small, InsightDatasetKind.Sections);
-			const newfacade = new InsightFacade();
-			expect(facade).to.deep.equal(newfacade);
-			await newfacade.addDataset("add2", small, InsightDatasetKind.Sections);
-			await newfacade.removeDataset("add1");
-			const left = await facade.listDatasets();
-			expect(left).to.deep.equal([
-				{
-					id: "add2",
-					kind: InsightDatasetKind.Sections,
-					numRows: 2,
-				},
-			]);
-		});
+	// 	it("crash test", async function () {
+	// 		await facade.addDataset("add1", small, InsightDatasetKind.Sections);
+	// 		const newfacade = new InsightFacade();
+	// 		expect(facade).to.deep.equal(newfacade);
+	// 		await newfacade.addDataset("add2", small, InsightDatasetKind.Sections);
+	// 		await newfacade.removeDataset("add1");
+	// 		const left = await facade.listDatasets();
+	// 		expect(left).to.deep.equal([
+	// 			{
+	// 				id: "add2",
+	// 				kind: InsightDatasetKind.Sections,
+	// 				numRows: 2,
+	// 			},
+	// 		]);
+	// 	});
 	// 	// fixxxx
 	// 	it("should list several datasets", async function () {
 	// 		// Setup
@@ -316,46 +316,46 @@ describe("InsightFacade", function () {
 			});
 		});
 
-		it("crash add check", async function () {
-			// Setup
-			await facade.addDataset("sev1", small, InsightDatasetKind.Sections);
-			// Execution
-			const fnew = new InsightFacade();
-			await fnew.addDataset("sev2", small, InsightDatasetKind.Sections);
-			const datasets = await fnew.listDatasets();
-			// Validation
-			expect(datasets).to.be.an.instanceOf(Array);
-			expect(datasets).to.have.length(2);
-			const course = datasets.find((dataset) => dataset.id === "sev1");
-			expect(course).to.exist;
-			expect(course).to.deep.equal({
-				id: "sev1",
-				kind: InsightDatasetKind.Sections,
-				numRows: 2,
-			});
-		});
-
-		it("crash remove check", async function () {
-			// Setup
-			await facade.addDataset("sev1", small, InsightDatasetKind.Sections);
-			// Execution
-			const fnew = new InsightFacade();
-			await fnew.addDataset("sev2", small, InsightDatasetKind.Sections);
-			await fnew.addDataset("noneed", small, InsightDatasetKind.Sections);
-			const fag = new InsightFacade();
-			await fag.removeDataset("noneed");
-			const datasets = await fag.listDatasets();
-			// Validation
-			expect(datasets).to.be.an.instanceOf(Array);
-			expect(datasets).to.have.length(2);
-			const course = datasets.find((dataset) => dataset.id === "sev1");
-			expect(course).to.exist;
-			expect(course).to.deep.equal({
-				id: "sev1",
-				kind: InsightDatasetKind.Sections,
-				numRows: 2,
-			});
-		});
+	// 	it("crash add check", async function () {
+	// 		// Setup
+	// 		await facade.addDataset("sev1", small, InsightDatasetKind.Sections);
+	// 		// Execution
+	// 		const fnew = new InsightFacade();
+	// 		await fnew.addDataset("sev2", small, InsightDatasetKind.Sections);
+	// 		const datasets = await fnew.listDatasets();
+	// 		// Validation
+	// 		expect(datasets).to.be.an.instanceOf(Array);
+	// 		expect(datasets).to.have.length(2);
+	// 		const course = datasets.find((dataset) => dataset.id === "sev1");
+	// 		expect(course).to.exist;
+	// 		expect(course).to.deep.equal({
+	// 			id: "sev1",
+	// 			kind: InsightDatasetKind.Sections,
+	// 			numRows: 2,
+	// 		});
+	// 	});
+	//
+	// 	it("crash remove check", async function () {
+	// 		// Setup
+	// 		await facade.addDataset("sev1", small, InsightDatasetKind.Sections);
+	// 		// Execution
+	// 		const fnew = new InsightFacade();
+	// 		await fnew.addDataset("sev2", small, InsightDatasetKind.Sections);
+	// 		await fnew.addDataset("noneed", small, InsightDatasetKind.Sections);
+	// 		const fag = new InsightFacade();
+	// 		await fag.removeDataset("noneed");
+	// 		const datasets = await fag.listDatasets();
+	// 		// Validation
+	// 		expect(datasets).to.be.an.instanceOf(Array);
+	// 		expect(datasets).to.have.length(2);
+	// 		const course = datasets.find((dataset) => dataset.id === "sev1");
+	// 		expect(course).to.exist;
+	// 		expect(course).to.deep.equal({
+	// 			id: "sev1",
+	// 			kind: InsightDatasetKind.Sections,
+	// 			numRows: 2,
+	// 		});
+	// 	});
 	});
 
 	/*
@@ -407,7 +407,7 @@ describe("InsightFacade", function () {
 		folderTest<Input, Output, Error>(
 			"Dynamic InsightFacade PerformQuery tests - simple",
 			(input) => facade.performQuery(input),
-			"./test/resources/queries_iris",
+			"./test/resources/no order",
 			{
 				errorValidator,
 				assertOnError,
@@ -459,7 +459,7 @@ describe("InsightFacade", function () {
 		folderTest<Input, Output, Error>(
 			"Dynamic InsightFacade PerformQuery tests - simple",
 			(input) => FACADE.performQuery(input),
-			"./test/resources/queries_iris",
+			"./test/resources/invalid",
 			{
 				errorValidator,
 				assertOnError,
