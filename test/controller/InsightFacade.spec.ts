@@ -28,7 +28,8 @@ describe("InsightFacade", function () {
 	let wrongfolder: string;
 	let novalidsection: string;
 	let missingfield: string;
-	//
+	let missingfield2: string;
+	let missingfieldall: string;
 	let section: string;
 	let courses: string;
 	let picture: string;
@@ -48,8 +49,10 @@ describe("InsightFacade", function () {
 		invalidjson = getContentFromArchives("invalidjson.zip");
 		wrongfolder = getContentFromArchives("wrongfolder.zip");
 		novalidsection = getContentFromArchives("novalidsection.zip");
-		missingfield = getContentFromArchives("missingfield1.zip");
-		//
+		missingfield = getContentFromArchives("missingField1.zip");
+		missingfield2 = getContentFromArchives("missingField2.zip");
+		missingfieldall = getContentFromArchives("allmissing.zip");
+
 		section = getContentFromArchives("pair.zip");
 		courses = getContentFromArchives("courses.zip");
 		picture = getContentFromArchives("image.zip");
@@ -164,9 +167,21 @@ describe("InsightFacade", function () {
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it("should reject with missingfield json file", function () {
+		it("should not reject with missingfield json file, still 1 valid", async function ()  {
 			// not a zip file
-			const result = facade.addDataset("missingfield", missingfield, InsightDatasetKind.Sections);
+			const result = await facade.addDataset("missingfield", missingfield, InsightDatasetKind.Sections);
+			expect(result).to.deep.equal(["missingfield"]);
+		});
+
+		it("should not reject with missingfield json file, still some valid", async function ()  {
+			// not a zip file
+			const result = await facade.addDataset("missing", missingfield2, InsightDatasetKind.Sections);
+			expect(result).to.deep.equal(["missing"]);
+		});
+
+		it("should reject with all missingfield json file", function () {
+			// not a zip file
+			const result = facade.addDataset("missingfieldall", missingfieldall, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
