@@ -1,5 +1,5 @@
-import {IInsightFacade, InsightDataset, InsightDatasetKind, InsightError, InsightResult, NotFoundError, ResultTooLargeError}
-	from "./IInsightFacade";
+import {IInsightFacade, InsightDataset, InsightDatasetKind, InsightError, InsightResult, NotFoundError,
+	ResultTooLargeError} from "./IInsightFacade";
 import JSZip from "jszip";
 import {Section} from "./CourseHelper";
 import {Dataset} from "./DatasetHelper";
@@ -46,8 +46,9 @@ export default class InsightFacade implements IInsightFacade {
 					}
 					Promise.all(promises)
 						.then((results) => {
-							let res = InsightFacade.eachfile(results, sections);
-							if (sections.length === 0 || res) {
+							InsightFacade.eachfile(results, sections);
+						}).then(() => {
+							if (sections.length === 0) {
 								return reject(new InsightError("No valid section! Bad Dataset"));
 							}
 							let dataset = new Dataset(ID, sections);
@@ -108,7 +109,6 @@ export default class InsightFacade implements IInsightFacade {
 		let arr: any[] = [];
 		let result = this.displaySections(secs, query, id, arr);
 		return this.displayOrder(result, query.OPTIONS);
-		return res;
 	}
 	private displaySections(secs: Section[], query: any, id: string, arr: any[]): InsightResult[] {
 		let keys = query.OPTIONS.COLUMNS;
@@ -208,6 +208,7 @@ export default class InsightFacade implements IInsightFacade {
 			InsightFacade.IDs.includes(ID) ||
 			fs.existsSync("./data/" + ID + ".json") ||
 			kind !== InsightDatasetKind.Sections
+			// eslint-disable-next-line max-lines
 		);
 	}
 
@@ -245,26 +246,25 @@ export default class InsightFacade implements IInsightFacade {
 		}
 	}
 
-	private static eachfile(results: any[], sections: Section[]): boolean {
+	private static eachfile(results: any[], sections: Section[]) {
 		for (const data of results) {
-			let err: number = 0;
 			try {
 				let parse = JSON.parse(data);
 				for (const result of parse.result) {
 					if (
-						!(
-							result.id === undefined ||
-							result.Course === undefined ||
-							result.Title === undefined ||
-							result.Professor === undefined ||
-							result.Subject === undefined ||
-							result.Section === undefined ||
-							result.Avg === undefined ||
-							result.Audit === undefined ||
-							result.Pass === undefined ||
-							result.Fail === undefined
-						)
+						result.id === undefined ||
+						result.Course === undefined ||
+						result.Title === undefined ||
+						result.Professor === undefined ||
+						result.Subject === undefined ||
+						result.Section === undefined ||
+						result.Avg === undefined ||
+						result.Audit === undefined ||
+						result.Pass === undefined ||
+						result.Fail === undefined
 					) {
+						console.log("missingfiled");
+					} else {
 						let yr: number = 0;
 						if (result.Section === "overall") {
 							yr = 1900;
@@ -288,12 +288,8 @@ export default class InsightFacade implements IInsightFacade {
 					}
 				}
 			} catch {
-				err += 1;
-			}
-			if (err === results.length) {
-				return true;
+				//
 			}
 		}
-		return false;
 	}
 }
