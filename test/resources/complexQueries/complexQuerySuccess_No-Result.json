@@ -1,0 +1,33 @@
+{
+	"title": "complex query success: no-result",
+	"input": {
+		"WHERE": {
+			"OR": [
+				{
+					"AND": [
+						{
+							"GT": {
+								"sections_avg": 90.5
+							}
+						},
+						{
+							"IS": {
+								"sections_id": "210"
+							}
+						}
+					]
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_year",
+				"sections_dept",
+				"sections_id",
+				"sections_avg"
+			]
+		}
+	},
+	"errorExpected": false,
+	"expected": []
+}

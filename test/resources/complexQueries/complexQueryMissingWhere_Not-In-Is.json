@@ -1,0 +1,35 @@
+{
+	"title": "complex query missing where: not-in-is",
+	"input": {
+		"WHERE": {
+			"OR": [
+				{
+					"AND": [
+						{
+							"GT": {
+								"sections_avg": 85.9
+							}
+						},
+						{
+							"IS": {
+								"NOT": {
+									"sections_id": "210"
+								}
+							}
+						}
+					]
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_year",
+				"sections_dept",
+				"sections_id",
+				"sections_avg"
+			]
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

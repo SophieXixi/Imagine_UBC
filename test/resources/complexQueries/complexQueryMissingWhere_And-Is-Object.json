@@ -1,0 +1,25 @@
+{
+	"title": "complex query missing where: and-is-object",
+	"input": {
+		"WHERE": {
+			"OR": [
+				{
+					"AND": {
+						"GT": {
+							"sections_avg": 85.9
+						}
+					}
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": {
+				"GT": {
+					"sections_avg": 85.9
+				}
+			}
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

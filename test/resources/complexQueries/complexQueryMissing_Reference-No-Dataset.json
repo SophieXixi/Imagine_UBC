@@ -1,0 +1,33 @@
+{
+	"title": "complex query missing: reference-no-dataset",
+	"input": {
+		"WHERE": {
+			"OR": [
+				{
+					"AND": [
+						{
+							"LT": {
+								"_avg": 90
+							}
+						},
+						{
+							"IS": {
+								"_id": "210"
+							}
+						}
+					]
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"_dept",
+				"_id",
+				"_avg"
+			],
+			"ORDER": "_avg"
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

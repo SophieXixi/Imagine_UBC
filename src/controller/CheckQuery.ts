@@ -29,7 +29,7 @@ export class CheckQuery {
 				let arr = Object.keys(query.WHERE);
 				if (arr.length > 1) {
 					return reject(new InsightError("invalid"));
-				} else if (arr.length === 0) {
+				} else if (arr.length === 0){
 					// do nothing
 				} else {
 					let res: number = this.checkFilter(arr[0], query.WHERE);
