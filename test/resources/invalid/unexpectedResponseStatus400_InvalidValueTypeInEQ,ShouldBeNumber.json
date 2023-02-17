@@ -1,0 +1,41 @@
+{
+	"title": "Unexpected response status 400: Invalid value type in EQ, should be number",
+	"input": {
+		"WHERE": {
+			"OR": [
+				{
+					"AND": [
+						{
+							"OR": [
+								{
+									"AND": [
+										{
+											"EQ": {
+												"sections_avg": "95"
+											}
+										},
+										{
+											"IS": {
+												"sections_dept": "adhe"
+											}
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept",
+				"sections_id",
+				"sections_avg"
+			],
+			"ORDER": "sections_avg"
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}
