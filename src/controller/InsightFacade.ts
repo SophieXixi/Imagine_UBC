@@ -208,7 +208,6 @@ export default class InsightFacade implements IInsightFacade {
 			InsightFacade.IDs.includes(ID) ||
 			fs.existsSync("./data/" + ID + ".json") ||
 			kind !== InsightDatasetKind.Sections
-			// eslint-disable-next-line max-lines
 		);
 	}
 
