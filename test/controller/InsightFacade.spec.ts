@@ -1,243 +1,363 @@
-// import {
-// 	IInsightFacade,
-// 	InsightDatasetKind,
-// 	InsightError,
-// 	InsightResult,
-// 	NotFoundError,
-// 	ResultTooLargeError,
-// } from "../../src/controller/IInsightFacade";
-// import InsightFacade from "../../src/controller/InsightFacade";
-//
-// import {folderTest} from "@ubccpsc310/folder-test";
-// import {expect, use} from "chai";
-// import chaiAsPromised from "chai-as-promised";
-// import {clearDisk, getContentFromArchives} from "../TestUtil";
-//
-// use(chaiAsPromised);
-//
-// describe("InsightFacade", function () {
-// 	let facade: IInsightFacade;
-//
-// 	// Declare datasets used in tests. You should add more datasets like this!
-// 	let sections: string;
-// 	let nonzip: string;
-// 	let dup: string;
-// 	let small: string;
-// 	let notjson: string;
-// 	let empty: string;
-// 	let invalidjson: string;
-// 	let wrongfolder: string;
-// 	let novalidsection: string;
-// 	let missingfield: string;
-// 	let missingfield2: string;
-// 	let missingfieldall: string;
-// 	//
-// 	let section: string;
-// 	let courses: string;
-// 	let picture: string;
-// 	let inside: string;
-// 	let novalid: string;
-// 	let shouldpass: string;
-//
-// 	before(function () {
-// 		// This block runs once and loads the datasets.
-// 		sections = getContentFromArchives("pair.zip");
-//
-// 		small = getContentFromArchives("courses.zip");
-// 		nonzip = getContentFromArchives("CPSC330.pdf");
-// 		dup = getContentFromArchives("dup.zip");
-// 		notjson = getContentFromArchives("notjson.zip");
-// 		empty = getContentFromArchives("empty.zip");
-// 		invalidjson = getContentFromArchives("invalidjson.zip");
-// 		wrongfolder = getContentFromArchives("wrongfolder.zip");
-// 		novalidsection = getContentFromArchives("novalidsection.zip");
-// 		//
-// 		section = getContentFromArchives("pair.zip");
-// 		courses = getContentFromArchives("courses.zip");
-// 		picture = getContentFromArchives("image.zip");
-// 		inside = getContentFromArchives("folder-inside.zip");
-// 		novalid = getContentFromArchives("Novalid.zip");
-// 		shouldpass = getContentFromArchives("shouldpass.zip");
-// 		missingfield = getContentFromArchives("missingField1.zip");
-// 		missingfield2 = getContentFromArchives("missingField2.zip");
-// 		missingfieldall = getContentFromArchives("allmissing.zip");
-//
-// 		// Just in case there is anything hanging around from a previous run of the test suite
-// 		clearDisk();
-// 	});
-//
-// 	describe("Add/Remove/List Dataset", function () {
-// 		before(function () {
-// 			console.info(`Before: ${this.test?.parent?.title}`);
-// 		});
-//
-// 		beforeEach(function () {
-// 			// This section resets the insightFacade instance
-// 			// This runs before each test
-// 			console.info(`BeforeTest: ${this.currentTest?.title}`);
-// 			facade = new InsightFacade();
-// 		});
-//
-// 		after(function () {
-// 			console.info(`After: ${this.test?.parent?.title}`);
-// 		});
-//
-// 		afterEach(function () {
-// 			// This section resets the data directory (removing any cached data)
-// 			// This runs after each test, which should make each test independent of the previous one
-// 			console.info(`AfterTest: ${this.currentTest?.title}`);
-// 			clearDisk();
-// 		});
-//
-// 		// This is a unit test. You should create more like this!
-// 		it("should reject with  an empty dataset id", function () {
-// 			const result = facade.addDataset("", sections, InsightDatasetKind.Sections);
-// 			return expect(result).to.eventually.be.rejectedWith(InsightError);
-// 		});
-//
-// 		it("should successfully add an dataset", async function () {
-// 			const add = await facade.addDataset("course", small, InsightDatasetKind.Sections);
-// 			expect(add).to.deep.equal(["course"]);
-// 		});
-//
-// 		it("should pass with only one file contains valid sections", async function () {
-// 			const add = await facade.addDataset("course", shouldpass, InsightDatasetKind.Sections);
-// 			expect(add).to.deep.equal(["course"]);
-// 		});
-//
-// 		it("should reject with  white space dataset id to add", function () {
-// 			const result = facade.addDataset(" ", sections, InsightDatasetKind.Sections);
-// 			return expect(result).to.eventually.be.rejectedWith(InsightError);
-// 		});
-//
-// 		it("should reject with long white space dataset id to add", function () {
-// 			const result = facade.addDataset("     ", sections, InsightDatasetKind.Sections);
-// 			return expect(result).to.eventually.be.rejectedWith(InsightError);
-// 		});
-//
-// 		it("should reject with underscore after dataset id to add", function () {
-// 			const result = facade.addDataset("ubc_", sections, InsightDatasetKind.Sections);
-// 			return expect(result).to.eventually.be.rejectedWith(InsightError);
-// 		});
-//
-// 		it("should reject with underscore before dataset id to add", function () {
-// 			const result = facade.addDataset("_ubc", sections, InsightDatasetKind.Sections);
-// 			return expect(result).to.eventually.be.rejectedWith(InsightError);
-// 		});
-//
-// 		it("should reject with underscore middle dataset id to add", function () {
-// 			const result = facade.addDataset("ubc_ubc", sections, InsightDatasetKind.Sections);
-// 			return expect(result).to.eventually.be.rejectedWith(InsightError);
-// 		});
-//
-// 		it("should reject with an invalid dataset kind to add", function () {
-// 			const result = facade.addDataset("courses", sections, InsightDatasetKind.Rooms);
-// 			return expect(result).to.eventually.be.rejectedWith(InsightError);
-// 		});
-//
-// 		it("should reject with not zip file", function () {
-// 			// not a zip file
-// 			const result = facade.addDataset("notzip", nonzip, InsightDatasetKind.Sections);
-// 			return expect(result).to.eventually.be.rejectedWith(InsightError);
-// 		});
-//
-// 		it("should reject with duplicate ids to add dataset", async function () {
-// 			try {
-// 				await facade.addDataset("dup", sections, InsightDatasetKind.Sections);
-// 				await facade.addDataset("dup", sections, InsightDatasetKind.Sections);
-// 				expect.fail("should be rejected!");
-// 			} catch (err) {
-// 				expect(err).to.be.instanceOf(InsightError);
-// 			}
-// 		});
-//
-// 		it("should reject with an empty zip file", function () {
-// 			// not a zip file
-// 			const result = facade.addDataset("empty", empty, InsightDatasetKind.Sections);
-// 			return expect(result).to.eventually.be.rejectedWith(InsightError);
-// 		});
-//
-// 		it("should reject with not json file", function () {
-// 			// not a zip file
-// 			const result = facade.addDataset("notjson", notjson, InsightDatasetKind.Sections);
-// 			return expect(result).to.eventually.be.rejectedWith(InsightError);
-// 		});
-//
-// 		it("should reject with invalid json file", function () {
-// 			// not a zip file
-// 			const result = facade.addDataset("invalidjson", invalidjson, InsightDatasetKind.Sections);
-// 			return expect(result).to.eventually.be.rejectedWith(InsightError);
-// 		});
-//
-// 		it("should not reject with missingfield json file, still 1 valid", async function ()  {
-// 			// not a zip file
-// 			const result = await facade.addDataset("missingfield", missingfield, InsightDatasetKind.Sections);
-// 			expect(result).to.deep.equal(["missingfield"]);
-// 		});
-//
-// 		it("should not reject with missingfield json file, still some valid", async function ()  {
-// 			// not a zip file
-// 			const result = await facade.addDataset("missing", missingfield2, InsightDatasetKind.Sections);
-// 			expect(result).to.deep.equal(["missing"]);
-// 		});
-//
-// 		it("should reject with all missingfield json file", function () {
-// 			// not a zip file
-// 			const result = facade.addDataset("missingfieldall", missingfieldall, InsightDatasetKind.Sections);
-// 			return expect(result).to.eventually.be.rejectedWith(InsightError);
-// 		});
-//
-// 		it("should reject with wrong folder zip", function () {
-// 			// not a zip file
-// 			const result = facade.addDataset("wrongfolder", wrongfolder, InsightDatasetKind.Sections);
-// 			return expect(result).to.eventually.be.rejectedWith(InsightError);
-// 		});
-//
-// 		// success
-// 		it("addDataset should successfully add a dataset one", function () {
-// 			const result = facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
-// 			return expect(result).to.eventually.deep.equal(["ubc"]);
-// 		});
-//
-// 		// id-invalid: id is not an id string
-// 		it("addDataset should reject with an invalid id string", function () {
-// 			const result = facade.addDataset("T_T", courses, InsightDatasetKind.Sections);
-// 			return expect(result).to.eventually.be.rejectedWith(InsightError);
-// 		});
-//
-// 		// id-invalid: id is only whitespace
-// 		it("addDataset should reject with an empty dataset id", function () {
-// 			const result = facade.addDataset("", courses, InsightDatasetKind.Sections);
-// 			return expect(result).to.eventually.be.rejectedWith(InsightError);
-// 		});
-//
-// 		// white space
-// 		it("addDataset should reject with an whitespace dataset id", function () {
-// 			const result = facade.addDataset("      ", courses, InsightDatasetKind.Sections);
-// 			return expect(result).to.eventually.be.rejectedWith(InsightError);
-// 		});
-//
-// 		// content-invalid: zip file is not a zip file
-// 		it("addDataset should reject with not an zip file", function () {
-// 			const text = getContentFromArchives("text.txt");
-// 			const result = facade.addDataset("ubc", text, InsightDatasetKind.Sections);
-// 			return expect(result).to.eventually.be.rejectedWith(InsightError);
-// 		});
-//
-// 		// content-dataset-invalid: dataset is not in the format of a base64 string
-// 		it("addDataset should reject with file not in the format of base64 string", async function () {
-// 			try {
-// 				await facade.addDataset("ubc", picture, InsightDatasetKind.Sections);
-// 				expect.fail("should reject: dataset is not in the format of a base64 string");
-// 			} catch (err) {
-// 				expect(err).to.be.instanceOf(InsightError);
-// 			}
-// 		});
-//
-// 		it("addDataset should reject with file not in the format of base64 string??", function () {
-// 			const result = facade.addDataset("ubc", picture, InsightDatasetKind.Sections);
-// 			return expect(result).to.eventually.be.rejectedWith(InsightError);
-// 		});
+import {
+	IInsightFacade,
+	InsightDatasetKind,
+	InsightError,
+	InsightResult,
+	NotFoundError,
+	ResultTooLargeError,
+} from "../../src/controller/IInsightFacade";
+import InsightFacade from "../../src/controller/InsightFacade";
+
+import {folderTest} from "@ubccpsc310/folder-test";
+import {expect, use} from "chai";
+import chaiAsPromised from "chai-as-promised";
+import {clearDisk, getContentFromArchives} from "../TestUtil";
+
+use(chaiAsPromised);
+
+describe("InsightFacade", function () {
+	let facade: IInsightFacade;
+
+	// Declare datasets used in tests. You should add more datasets like this!
+	let sections: string;
+	let nonzip: string;
+	let dup: string;
+	let small: string;
+	let notjson: string;
+	let empty: string;
+	let invalidjson: string;
+	let wrongfolder: string;
+	let novalidsection: string;
+	let missingfield: string;
+	let missingfield2: string;
+	let missingfieldall: string;
+	let section: string;
+	let courses: string;
+	let picture: string;
+	let inside: string;
+	let novalid: string;
+	let shouldpass: string;
+
+	// C2 new add
+	let indexnotroot: string;
+	let campus: string;
+	let indexempty: string;
+	let notable: string;
+
+	before(function () {
+		// This block runs once and loads the datasets.
+		sections = getContentFromArchives("pair.zip");
+
+		small = getContentFromArchives("courses.zip");
+		nonzip = getContentFromArchives("CPSC330.pdf");
+		dup = getContentFromArchives("dup.zip");
+		notjson = getContentFromArchives("notjson.zip");
+		empty = getContentFromArchives("empty.zip");
+		invalidjson = getContentFromArchives("invalidjson.zip");
+		wrongfolder = getContentFromArchives("wrongfolder.zip");
+		novalidsection = getContentFromArchives("novalidsection.zip");
+		section = getContentFromArchives("pair.zip");
+		courses = getContentFromArchives("courses.zip");
+		picture = getContentFromArchives("image.zip");
+		inside = getContentFromArchives("folder-inside.zip");
+		novalid = getContentFromArchives("Novalid.zip");
+		shouldpass = getContentFromArchives("shouldpass.zip");
+		missingfield = getContentFromArchives("missingField1.zip");
+		missingfield2 = getContentFromArchives("missingField2.zip");
+		missingfieldall = getContentFromArchives("allmissing.zip");
+
+		// C2 new add
+		indexnotroot = getContentFromArchives("index_not_root.zip");
+		campus = getContentFromArchives("campus.zip");
+		indexempty = getContentFromArchives("index empty.zip");
+		notable = getContentFromArchives("notable.zip");
+		// Just in case there is anything hanging around from a previous run of the test suite
+		clearDisk();
+	});
+
+	describe("C2: Add/Remove/List Dataset", function () {
+		before(function () {
+			console.info(`Before: ${this.test?.parent?.title}`);
+		});
+
+		beforeEach(function () {
+			// This section resets the insightFacade instance
+			// This runs before each test
+			console.info(`BeforeTest: ${this.currentTest?.title}`);
+			facade = new InsightFacade();
+		});
+
+		after(function () {
+			console.info(`After: ${this.test?.parent?.title}`);
+		});
+
+		afterEach(function () {
+			// This section resets the data directory (removing any cached data)
+			// This runs after each test, which should make each test independent of the previous one
+			console.info(`AfterTest: ${this.currentTest?.title}`);
+			clearDisk();
+		});
+
+		it("should reject with  an empty dataset id", function () {
+			const result = facade.addDataset("", sections, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with  white space dataset id to add", function () {
+			const result = facade.addDataset(" ", sections, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with long white space dataset id to add", function () {
+			const result = facade.addDataset("     ", sections, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with underscore after dataset id to add", function () {
+			const result = facade.addDataset("ubc_", sections, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with underscore before dataset id to add", function () {
+			const result = facade.addDataset("_ubc", sections, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with underscore middle dataset id to add", function () {
+			const result = facade.addDataset("ubc_ubc", sections, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+
+		it("should reject with duplicate ids to add dataset", async function () {
+			try {
+				await facade.addDataset("dup", sections, InsightDatasetKind.Rooms);
+				await facade.addDataset("dup", sections, InsightDatasetKind.Rooms);
+				expect.fail("should be rejected!");
+			} catch (err) {
+				expect(err).to.be.instanceOf(InsightError);
+			}
+		});
+
+		it("should reject with not zip file", function () {
+			// not a zip file
+			const result = facade.addDataset("notzip", nonzip, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with an empty zip file", function () {
+			// not a zip file
+			const result = facade.addDataset("empty", empty, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with not empty zip but no index file", function () {
+			// not a zip file
+			const result = facade.addDataset("wrongfolder", wrongfolder, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with index file not in root ", function () {
+			// not a zip file
+			const result = facade.addDataset("indexnotroot", indexnotroot, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should successfully add compus", function () {
+			// not a zip file
+			const result = facade.addDataset("campus", campus, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.deep.equal(["campus"]);
+		});
+
+		it("should reject with empty index file", function () {
+			// not a zip file
+			const result = facade.addDataset("empty", indexempty, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with no table content", function () {
+			// not a zip file
+			const result = facade.addDataset("notable", notable, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+ 	});
+// });
+
+
+	describe("Add/Remove/List Dataset", function () {
+		before(function () {
+			console.info(`Before: ${this.test?.parent?.title}`);
+		});
+
+		beforeEach(function () {
+			// This section resets the insightFacade instance
+			// This runs before each test
+			console.info(`BeforeTest: ${this.currentTest?.title}`);
+			facade = new InsightFacade();
+		});
+
+		after(function () {
+			console.info(`After: ${this.test?.parent?.title}`);
+		});
+
+		afterEach(function () {
+			// This section resets the data directory (removing any cached data)
+			// This runs after each test, which should make each test independent of the previous one
+			console.info(`AfterTest: ${this.currentTest?.title}`);
+			clearDisk();
+		});
+
+		// This is a unit test. You should create more like this!
+		it("should reject with  an empty dataset id", function () {
+			const result = facade.addDataset("", sections, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should successfully add an dataset", async function () {
+			const add = await facade.addDataset("course", small, InsightDatasetKind.Sections);
+			expect(add).to.deep.equal(["course"]);
+		});
+
+		it("should pass with only one file contains valid sections", async function () {
+			const add = await facade.addDataset("course", shouldpass, InsightDatasetKind.Sections);
+			expect(add).to.deep.equal(["course"]);
+		});
+
+		it("should reject with  white space dataset id to add", function () {
+			const result = facade.addDataset(" ", sections, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with long white space dataset id to add", function () {
+			const result = facade.addDataset("     ", sections, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with underscore after dataset id to add", function () {
+			const result = facade.addDataset("ubc_", sections, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with underscore before dataset id to add", function () {
+			const result = facade.addDataset("_ubc", sections, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with underscore middle dataset id to add", function () {
+			const result = facade.addDataset("ubc_ubc", sections, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		// it("should reject with an invalid dataset kind to add", function () {
+		// 	const result = facade.addDataset("courses", sections, InsightDatasetKind.Rooms);
+		// 	return expect(result).to.eventually.be.rejectedWith(InsightError);
+		// });
+
+		it("should reject with not zip file", function () {
+			// not a zip file
+			const result = facade.addDataset("notzip", nonzip, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with duplicate ids to add dataset", async function () {
+			try {
+				await facade.addDataset("dup", sections, InsightDatasetKind.Sections);
+				await facade.addDataset("dup", sections, InsightDatasetKind.Sections);
+				expect.fail("should be rejected!");
+			} catch (err) {
+				expect(err).to.be.instanceOf(InsightError);
+			}
+		});
+
+		it("should reject with an empty zip file", function () {
+			// not a zip file
+			const result = facade.addDataset("empty", empty, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with not json file", function () {
+			// not a zip file
+			const result = facade.addDataset("notjson", notjson, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with invalid json file", function () {
+			// not a zip file
+			const result = facade.addDataset("invalidjson", invalidjson, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should not reject with missingfield json file, still 1 valid", async function () {
+			// not a zip file
+			const result = await facade.addDataset("missingfield", missingfield, InsightDatasetKind.Sections);
+			expect(result).to.deep.equal(["missingfield"]);
+		});
+
+		it("should not reject with missingfield json file, still some valid", async function () {
+			// not a zip file
+			const result = await facade.addDataset("missing", missingfield2, InsightDatasetKind.Sections);
+			expect(result).to.deep.equal(["missing"]);
+		});
+
+		it("should reject with all missingfield json file", function () {
+			// not a zip file
+			const result = facade.addDataset("missingfieldall", missingfieldall, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with wrong folder zip", function () {
+			// not a zip file
+			const result = facade.addDataset("wrongfolder", wrongfolder, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		// success
+		it("addDataset should successfully add a dataset one", function () {
+			const result = facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.deep.equal(["ubc"]);
+		});
+
+		// id-invalid: id is not an id string
+		it("addDataset should reject with an invalid id string", function () {
+			const result = facade.addDataset("T_T", courses, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		// id-invalid: id is only whitespace
+		it("addDataset should reject with an empty dataset id", function () {
+			const result = facade.addDataset("", courses, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		// white space
+		it("addDataset should reject with an whitespace dataset id", function () {
+			const result = facade.addDataset("      ", courses, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		// content-invalid: zip file is not a zip file
+		it("addDataset should reject with not an zip file", function () {
+			const text = getContentFromArchives("text.txt");
+			const result = facade.addDataset("ubc", text, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		// content-dataset-invalid: dataset is not in the format of a base64 string
+		it("addDataset should reject with file not in the format of base64 string", async function () {
+			try {
+				await facade.addDataset("ubc", picture, InsightDatasetKind.Sections);
+				expect.fail("should reject: dataset is not in the format of a base64 string");
+			} catch (err) {
+				expect(err).to.be.instanceOf(InsightError);
+			}
+		});
+
+		it("addDataset should reject with file not in the format of base64 string??", function () {
+			const result = facade.addDataset("ubc", picture, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+	});
+});
 //
 // 		// !!!
 // 		// content-dataset-invalid: not under the folder courses
@@ -496,8 +616,8 @@
 // 				kind: InsightDatasetKind.Sections,
 // 				numRows: 2,
 // 			});
-// 		});
 // 	});
+// });
 //
 // 	/*
 // 	 * This test suite dynamically generates tests from the JSON files in test/resources/queries.
