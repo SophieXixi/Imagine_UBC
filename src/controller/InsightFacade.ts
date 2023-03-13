@@ -101,8 +101,8 @@ export default class InsightFacade implements IInsightFacade {
 							display = new Display(sec, quer, qu.getDataset());
 							return resolve(display.displayQuery());
 						})
-						.catch((err) => {
-							return reject(err);
+						.catch((er) => {
+							return reject(er);
 						});
 				});
 		});
