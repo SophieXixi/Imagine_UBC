@@ -16,6 +16,7 @@ import {CheckRoom} from "./CheckRoom";
 import {Display} from "./Display";
 import {CheckSection} from "./CheckSection";
 import {SearchSection} from "./SearchSection";
+
 /**
  * This is the main programmatic entry point for the project.
  * Method documentation is in IInsightFacade
@@ -24,7 +25,6 @@ import {SearchSection} from "./SearchSection";
 export default class InsightFacade implements IInsightFacade {
 	private static datasets: Map<string, Dataset>;
 	private static IDs: string[];
-
 	constructor() {
 		// console.log("InsightFacadeImpl::init()");
 		InsightFacade.datasets = new Map<string, Dataset>();
@@ -101,8 +101,8 @@ export default class InsightFacade implements IInsightFacade {
 							display = new Display(sec, quer, qu.getDataset());
 							return resolve(display.displayQuery());
 						})
-						.catch((err) => {
-							return reject(err);
+						.catch((er) => {
+							return reject(er);
 						});
 				});
 		});

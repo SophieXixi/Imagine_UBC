@@ -9,6 +9,7 @@ export class SearchSection {
 		this.unchecked = ds.sections;
 		this.valid_sections = [];
 	}
+
 	public searchQuery(): Promise<Section[]> {
 		return new Promise((resolve, reject) => {
 			for (const sec of this.unchecked) {
@@ -26,6 +27,7 @@ export class SearchSection {
 			}
 		});
 	}
+
 	private filterSection(sec: Section): number {
 		let arr = Object.keys(this.query);
 		if (arr.length === 0) {
@@ -39,6 +41,7 @@ export class SearchSection {
 		}
 		return 0;
 	}
+
 	// str: the name of the key
 	// obj: the object includes the str
 	private filterKey(sec: Section, str: string, obj: any): number {
@@ -59,6 +62,7 @@ export class SearchSection {
 		}
 		return 1;
 	}
+
 	private filterOr(array: any, sec: Section): number {
 		for (const obj of array) {
 			if (this.filterKey(sec, Object.keys(obj)[0], obj) === 0) {
@@ -67,6 +71,7 @@ export class SearchSection {
 		}
 		return 1;
 	}
+
 	private filterAnd(array: any, sec: Section) {
 		for (const obj of array) {
 			if (this.filterKey(sec, Object.keys(obj)[0], obj) === 1) {
@@ -75,6 +80,7 @@ export class SearchSection {
 		}
 		return 0;
 	}
+
 	private filterNot(obj: any, sec: Section): number {
 		let arr = Object.keys(obj);
 		if (this.filterKey(sec, arr[0], obj)) {
@@ -83,6 +89,7 @@ export class SearchSection {
 			return 1;
 		}
 	}
+
 	private filterGt(obj: any, sec: Section): number {
 		let arr = Object.keys(obj);
 		let array = Object.keys(obj[arr[0]]);
@@ -119,6 +126,7 @@ export class SearchSection {
 			}
 		}
 	}
+
 	private filterLt(obj: any, sec: Section): number {
 		let arr = Object.keys(obj);
 		let array = Object.keys(obj[arr[0]]);
@@ -157,6 +165,7 @@ export class SearchSection {
 			}
 		}
 	}
+
 	private filterEq(obj: any, sec: Section): number {
 		let arr = Object.keys(obj);
 		let array = Object.keys(obj[arr[0]]);
@@ -193,6 +202,7 @@ export class SearchSection {
 			}
 		}
 	}
+
 	private filterIs(obj: any, sec: Section): number {
 		let arr = Object.keys(obj);
 		let array = Object.keys(obj[arr[0]]);
@@ -225,6 +235,7 @@ export class SearchSection {
 			}
 		}
 	}
+
 	private IsIncludes(sec: Section, field: string, value: string): boolean {
 		if (field === "dept") {
 			return sec.dept.includes(value.substring(1, value.length - 1));
@@ -238,6 +249,7 @@ export class SearchSection {
 			return sec.uuid.includes(value.substring(1, value.length - 1));
 		}
 	}
+
 	private IsStart(sec: Section, field: string, value: string): boolean {
 		if (field === "dept") {
 			return sec.dept.startsWith(value.substring(0, value.length - 1));
@@ -251,6 +263,7 @@ export class SearchSection {
 			return sec.uuid.startsWith(value.substring(0, value.length - 1));
 		}
 	}
+
 	private IsEnd(sec: Section, field: string, value: string): boolean {
 		if (field === "dept") {
 			return sec.dept.endsWith(value.substring(1, value.length));
@@ -264,6 +277,7 @@ export class SearchSection {
 			return sec.uuid.endsWith(value.substring(1, value.length));
 		}
 	}
+
 	private IsMatch(sec: Section, field: string, value: string): boolean {
 		if (field === "dept") {
 			return sec.dept === value;

@@ -9,6 +9,7 @@ export class SearchRoom {
 		this.unchecked = ds.sections;
 		this.valid_sections = [];
 	}
+
 	public searchRoom(): Promise<Section[]> {
 		return new Promise((resolve, reject) => {
 			for (const sec of this.unchecked) {
@@ -25,6 +26,7 @@ export class SearchRoom {
 			}
 		});
 	}
+
 	private filterSection(sec: Section): number {
 		let arr = Object.keys(this.query);
 		if (arr.length === 0) {
@@ -38,8 +40,7 @@ export class SearchRoom {
 		}
 		return 0;
 	}
-	// str: the name of the key
-	// obj: the object includes the str
+
 	private filterKey(sec: Section, str: string, obj: any): number {
 		if (str === "OR") {
 			return this.filterOr(obj.OR, sec);
@@ -58,6 +59,7 @@ export class SearchRoom {
 		}
 		return 1;
 	}
+
 	private filterOr(array: any, sec: Section): number {
 		for (const obj of array) {
 			if (this.filterKey(sec, Object.keys(obj)[0], obj) === 0) {
@@ -66,6 +68,7 @@ export class SearchRoom {
 		}
 		return 1;
 	}
+
 	private filterAnd(array: any, sec: Section) {
 		for (const obj of array) {
 			if (this.filterKey(sec, Object.keys(obj)[0], obj) === 1) {
@@ -74,6 +77,7 @@ export class SearchRoom {
 		}
 		return 0;
 	}
+
 	private filterNot(obj: any, sec: Section): number {
 		let arr = Object.keys(obj);
 		if (this.filterKey(sec, arr[0], obj)) {
@@ -82,6 +86,7 @@ export class SearchRoom {
 			return 1;
 		}
 	}
+
 	private filterGt(obj: any, sec: any): number {
 		let arr = Object.keys(obj);
 		let array = Object.keys(obj[arr[0]]);
@@ -92,6 +97,7 @@ export class SearchRoom {
 			return 1;
 		}
 	}
+
 	private filterLt(obj: any, sec: any): number {
 		let arr = Object.keys(obj);
 		let array = Object.keys(obj[arr[0]]);
@@ -102,6 +108,7 @@ export class SearchRoom {
 			return 1;
 		}
 	}
+
 	private filterEq(obj: any, sec: any): number {
 		let arr = Object.keys(obj);
 		let array = Object.keys(obj[arr[0]]);
@@ -112,6 +119,7 @@ export class SearchRoom {
 			return 1;
 		}
 	}
+
 	private filterIs(obj: any, sec: Section): number {
 		let arr = Object.keys(obj);
 		let array = Object.keys(obj[arr[0]]);
@@ -143,9 +151,11 @@ export class SearchRoom {
 			}
 		}
 	}
+
 	private IsIncludes(sec: any, field: string, value: string): boolean {
 		return sec[field].includes(value.substring(1, value.length - 1));
 	}
+
 	private IsStart(sec: Section, field: string, value: string): boolean {
 		if (field === "dept") {
 			return sec.dept.startsWith(value.substring(0, value.length - 1));
@@ -159,6 +169,7 @@ export class SearchRoom {
 			return sec.uuid.startsWith(value.substring(0, value.length - 1));
 		}
 	}
+
 	private IsEnd(sec: Section, field: string, value: string): boolean {
 		if (field === "dept") {
 			return sec.dept.endsWith(value.substring(1, value.length));
@@ -172,6 +183,7 @@ export class SearchRoom {
 			return sec.uuid.endsWith(value.substring(1, value.length));
 		}
 	}
+
 	private IsMatch(sec: Section, field: string, value: string): boolean {
 		if (field === "dept") {
 			return sec.dept === value;

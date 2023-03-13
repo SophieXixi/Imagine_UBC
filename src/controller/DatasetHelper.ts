@@ -4,12 +4,14 @@ export class Dataset {
 	public sections: Section[];
 	public id: string;
 	public insightDataset: InsightDataset;
-	constructor(id: string, section: any[]) {
+	public kind: InsightDatasetKind;
+	constructor(id: string, section: any[], kind: InsightDatasetKind) {
 		this.id = id;
 		this.sections = section;
+		this.kind = kind;
 		this.insightDataset = {
 			id: this.id,
-			kind: InsightDatasetKind.Sections,
+			kind: this.kind,
 			numRows: this.sections.length,
 		};
 	}
