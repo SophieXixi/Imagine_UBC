@@ -98,6 +98,7 @@ export default class InsightFacade implements IInsightFacade {
 		let result = this.displaySections(secs, query, id, arr);
 		return this.displayOrder(result, query.OPTIONS);
 	}
+
 	private displaySections(secs: Section[], query: any, id: string, arr: any[]): InsightResult[] {
 		let keys = query.OPTIONS.COLUMNS;
 		for (const sec of secs) {
@@ -106,6 +107,7 @@ export default class InsightFacade implements IInsightFacade {
 		}
 		return arr;
 	}
+
 	private displaySection(sec: Section, keys: string[], id: string): InsightResult {
 		let obj = Object.create(null);
 		for (const key of keys) {
@@ -147,6 +149,7 @@ export default class InsightFacade implements IInsightFacade {
 			return secs;
 		}
 	}
+
 	private findMin(secs: any[], i: number, str: string): number {
 		let j = i;
 		let min: number = i;

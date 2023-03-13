@@ -1,4 +1,5 @@
 import {Building, Room} from "./RoomHelper";
+import http from "http";
 
 export class BuildingTable{
 	public static findTable(nodes: any): any {
@@ -17,6 +18,7 @@ export class BuildingTable{
 			return table;
 		}
 	}
+
 	public static verifyTable(table: any): boolean {
 		let c1: boolean = false;
 		let c2: boolean = false;
@@ -66,6 +68,36 @@ export class BuildingTable{
 		}
 		return Map;
 	}
+
+	public static buildingGeo(buildings: any): Promise<any> {
+		return new Promise((resolve, reject) => {
+			for (let building of buildings){
+				let encode = encodeURIComponent(building.address);
+				let link = "http://cs310.students.cs.ubc.ca:11316/api/v1/project_team122/" + encode;
+				// the http get call back function take reference from website
+				// reference: https://nodejs.org/api/http.html#httprequesturl-options-callback
+				http.get(link, (res) => {
+					res.setEncoding("utf8");
+					let rawData = "";
+					res.on("data", (chunk) => {
+						rawData += chunk;
+					});
+					res.on("end", () => {
+						try {
+							const parsedData = JSON.parse(rawData);
+							building.lat = parsedData.lat;
+							building.lon = parsedData.lon;
+						} catch (e) {
+							console.error(e);
+						}
+					});
+				}).on("error", (e) => {
+					console.error(`Got error: ${e.message}`);
+				});
+			}
+			return resolve (buildings);
+		});
+	}
 }
 
 export class RoomTable{
@@ -85,6 +117,7 @@ export class RoomTable{
 			return table;
 		}
 	}
+
 	public static verifyTable(table: any): boolean {
 		let c1: boolean = false;
 		let c2: boolean = false;
@@ -110,6 +143,7 @@ export class RoomTable{
 		}
 		return (c1 && c2 && c3 && c4);
 	}
+
 	public static getInfo(Map: Map<string,any>, table: any, RoomList: Room[]) {
 		let rows = table[0].childNodes.filter((row: any) => row.nodeName === "tr");
 		try {
@@ -149,6 +183,7 @@ export class RoomTable{
 		}
 		return RoomList;
 	}
+
 	public static getBuilding(href: any): string{
 		let building: string = "";
 		// Extract the building name from the href using regular expressions
