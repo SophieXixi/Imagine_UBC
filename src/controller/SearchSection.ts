@@ -1,6 +1,6 @@
 import {Section} from "./CourseHelper";
 import {ResultTooLargeError} from "./IInsightFacade";
-export class SearchQuery {
+export class SearchSection {
 	private query;
 	private unchecked: Section[];
 	private valid_sections: Section[];
