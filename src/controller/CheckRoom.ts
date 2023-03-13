@@ -8,10 +8,11 @@ export class CheckRoom {
 		this.ids = ids;
 		this.columns = [];
 	}
+
 	public getDataset(): string {
 		return this.dataset;
 	}
-	// if query is invalid, return 1; if query is valid, return 0;
+
 	public checkRoom(que: unknown): Promise<any> {
 		return new Promise((resolve, reject) => {
 			if (que === null || typeof que !== "object") {
@@ -20,28 +21,23 @@ export class CheckRoom {
 			let query: any = que as any;
 			if (this.checkWhere(query)) {
 				return reject(new InsightError("invalid"));
-			}else {
-				if (query.TRANSFORMATIONS) {
-					if (this.checkTransformation(query)) {
-						return reject(new InsightError("invalid"));
-					}
-				} else {
-					this.addColumn();
-					if (this.checkOption(query)) {
-						return reject(new InsightError("invalid"));
-					}
+			}else if (query.TRANSFORMATIONS) {
+				if (this.checkTransformation(query)) {
+					return reject(new InsightError("invalid"));
+				}
+			} else {
+				for (const str of ["fullname", "shortname", "number", "name", "address",
+					"lat", "lon", "seats", "type", "furniture", "href"]) {
+					this.columns.push(this.dataset.concat("_", str));
+				}
+				if (this.checkOption(query)) {
+					return reject(new InsightError("invalid"));
 				}
 			}
 			return resolve(" ");
 		});
 	}
-	private addColumn() {
-		let s = ["fullname", "shortname", "number", "name", "address",
-			"lat", "lon", "seats", "type", "furniture", "href"];
-		for (const str of s) {
-			this.columns.push(this.dataset.concat("_", str));
-		}
-	}
+
 	private checkWhere(query: any): number {
 		if (query.WHERE !== null) {
 			if (typeof query.WHERE !== "object" || Array.isArray(query.WHERE)) {
@@ -50,14 +46,13 @@ export class CheckRoom {
 			let arr = Object.keys(query.WHERE);
 			if (arr.length === 0){
 				return 0;
-			} else {
-				if (arr.length > 1 || this.checkFilter(arr[0], query.WHERE)) {
-					return 1;
-				}
+			} else if (arr.length > 1 || this.checkFilter(arr[0], query.WHERE)) {
+				return 1;
 			}
 		}
 		return 0;
 	}
+
 	private checkOption(query: any): number {
 		if (!query.OPTIONS || typeof query.OPTIONS !== "object") {
 			return 1;
@@ -65,24 +60,23 @@ export class CheckRoom {
 			let array = Object.keys(query.OPTIONS);
 			if (!array.includes("COLUMNS")) {
 				return 1;
-			} else {
-				for (const ele of array) {
-					if (ele === "COLUMNS") {
-						if (this.checkColumn(query.OPTIONS.COLUMNS)) {
-							return 1;
-						}
-					} else if (ele === "ORDER") {
-						if (this.checkOrder(query.OPTIONS)) {
-							return 1;
-						}
-					} else {
+			}
+			for (const ele of array) {
+				if (ele === "COLUMNS") {
+					if (this.checkColumn(query.OPTIONS.COLUMNS)) {
+						return 1;
+					}
+				} else if (ele === "ORDER") {
+					if (this.checkOrder(query.OPTIONS)) {
 						return 1;
 					}
 				}
+				return 1;
 			}
 			return 0;
 		}
 	}
+
 	private checkTransformation(query: any): number {
 		if (typeof query.TRANSFORMATIONS !== "object") {
 			return 1;
@@ -108,6 +102,7 @@ export class CheckRoom {
 			return 0;
 		}
 	}
+
 	private checkApply(query: any): number {
 		if (!query.APPLY || !Array.isArray(query.APPLY)) {
 			return 1;
@@ -124,17 +119,14 @@ export class CheckRoom {
 							return 1;
 						} else {
 							let arr = Object.keys(apply[app[0]]);
-							if (arr.length !== 1 || !(arr[0] === "MAX" || arr[0] === "AVG" || arr[0] === "MIN"
-								|| arr[0] === "COUNT" || arr[0] === "SUM")) {
+							if (arr.length !== 1) {
 								return 1;
 							} else if (arr[0] === "MAX" || arr[0] === "AVG" || arr[0] === "MIN" || arr[0] === "SUM") {
 								if (this.checkKey(apply[app[0]][arr[0]], "m")) {
 									return 1;
 								}
-							} else {
-								if (this.checkKey(apply[app[0]][arr[0]], "sm")) {
-									return 1;
-								}
+							} else if (this.checkKey(apply[app[0]][arr[0]], "sm")) {
+								return 1;
 							}
 						}
 					}
@@ -143,6 +135,7 @@ export class CheckRoom {
 			return 0;
 		}
 	}
+
 	private checkFilter(item: string, obj: any): number {
 		let res: number;
 		if (item === "OR") {
@@ -164,6 +157,7 @@ export class CheckRoom {
 		}
 		return res;
 	}
+
 	private checkQueryOrAnd(arr: any): number {
 		if (!Array.isArray(arr) || arr.length === 0) {
 			return 1;
@@ -182,6 +176,7 @@ export class CheckRoom {
 			return 0;
 		}
 	}
+
 	private checkQueryNot(obj: any): number {
 		if (typeof obj !== "object") {
 			return 1;
@@ -194,6 +189,7 @@ export class CheckRoom {
 			}
 		}
 	}
+
 	private checkQueryGtLtEq(obj: any): number {
 		if (typeof obj !== "object") {
 			return 1;
@@ -210,6 +206,7 @@ export class CheckRoom {
 			}
 		}
 	}
+
 	private checkQueryIs(obj: any): number {
 		if (typeof obj !== "object") {
 			return 1;
@@ -232,6 +229,7 @@ export class CheckRoom {
 			return 0;
 		}
 	}
+
 	private checkColumn(arr: any): number {
 		if (!Array.isArray(arr) || arr.length === 0) {
 			return 1;
@@ -244,6 +242,7 @@ export class CheckRoom {
 			return 0;
 		}
 	}
+
 	private checkOrder(obj: any): number {
 		if (typeof obj.ORDER === "string") {
 			if (!obj.COLUMNS.includes(obj.ORDER)) {
@@ -272,6 +271,7 @@ export class CheckRoom {
 		}
 		return 1;
 	}
+
 	private checkKey(str: string, type: string): number {
 		let div = str.search("_");
 		if (div === 0) {

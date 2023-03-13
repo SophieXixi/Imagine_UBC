@@ -8,9 +8,11 @@ export class CheckSection {
 		this.ids = ids;
 		this.columns = [];
 	}
+
 	public getDataset(): string {
 		return this.dataset;
 	}
+
 	public checkSection(que: unknown): Promise<any> {
 		return new Promise((resolve, reject) => {
 			if (que === null || typeof que !== "object") {
@@ -19,24 +21,22 @@ export class CheckSection {
 			let query: any = que as any;
 			if (this.checkWhere(query)) {
 				return reject(new InsightError("invalid"));
-			}else {
-				if (query.TRANSFORMATIONS) {
-					if (this.checkTransformation(query)) {
-						return reject(new InsightError("invalid"));
-					}
-				} else {
-					let s = ["avg", "pass", "fail", "audit", "year", "dept", "id", "instructor", "title", "uuid"];
-					for (const str of s) {
-						this.columns.push(this.dataset.concat("_", str));
-					}
-					if (this.checkOption(query)) {
-						return reject(new InsightError("invalid"));
-					}
+			}else if (query.TRANSFORMATIONS) {
+				if (this.checkTransformation(query)) {
+					return reject(new InsightError("invalid"));
+				}
+			} else {
+				for (const s of ["avg", "pass", "fail", "audit", "year", "dept", "id", "instructor", "title", "uuid"]) {
+					this.columns.push(this.dataset.concat("_", s));
+				}
+				if (this.checkOption(query)) {
+					return reject(new InsightError("invalid"));
 				}
 			}
 			return resolve(" ");
 		});
 	}
+
 	private checkWhere(query: any): number {
 		if (query.WHERE !== null) {
 			if (typeof query.WHERE !== "object" || Array.isArray(query.WHERE)) {
@@ -51,12 +51,12 @@ export class CheckSection {
 		}
 		return 0;
 	}
+
 	private checkOption(query: any): number {
 		if (!query.OPTIONS || typeof query.OPTIONS !== "object") {
 			return 1;
 		} else {
-			let array;
-			array = Object.keys(query.OPTIONS);
+			let array = Object.keys(query.OPTIONS);
 			if (!array.includes("COLUMNS")) {
 				return 1;
 			} else {
@@ -77,6 +77,7 @@ export class CheckSection {
 			return 0;
 		}
 	}
+
 	private checkTransformation(query: any): number {
 		if (typeof query.TRANSFORMATIONS !== "object") {
 			return 1;
@@ -102,6 +103,7 @@ export class CheckSection {
 			return 0;
 		}
 	}
+
 	private checkApply(query: any): number {
 		if (!query.APPLY || !Array.isArray(query.APPLY)) {
 			return 1;
@@ -125,10 +127,8 @@ export class CheckSection {
 								if (this.checkKey(apply[app[0]][arr[0]], "m")) {
 									return 1;
 								}
-							} else {
-								if (this.checkKey(apply[app[0]][arr[0]], "sm")) {
-									return 1;
-								}
+							} else if (this.checkKey(apply[app[0]][arr[0]], "sm")) {
+								return 1;
 							}
 						}
 					}
@@ -137,6 +137,7 @@ export class CheckSection {
 			return 0;
 		}
 	}
+
 	private checkFilter(item: string, obj: any): number {
 		let res: number;
 		if (item === "OR") {
@@ -158,6 +159,7 @@ export class CheckSection {
 		}
 		return res;
 	}
+
 	private checkQueryOrAnd(arr: any): number {
 		if (!Array.isArray(arr) || arr.length === 0) {
 			return 1;
@@ -176,12 +178,12 @@ export class CheckSection {
 			return 0;
 		}
 	}
+
 	private checkQueryNot(obj: any): number {
 		if (typeof obj !== "object") {
 			return 1;
 		} else {
-			let arr;
-			arr = Object.keys(obj);
+			let arr = Object.keys(obj);
 			if (arr.length !== 1) {
 				return 1;
 			} else {
@@ -189,12 +191,12 @@ export class CheckSection {
 			}
 		}
 	}
+
 	private checkQueryGtLtEq(obj: any): number {
 		if (typeof obj !== "object") {
 			return 1;
 		} else {
-			let arr;
-			arr = Object.keys(obj);
+			let arr = Object.keys(obj);
 			if (arr.length !== 1) {
 				return 1;
 			} else {
@@ -206,31 +208,28 @@ export class CheckSection {
 			}
 		}
 	}
+
 	private checkQueryIs(obj: any): number {
 		if (typeof obj !== "object") {
 			return 1;
 		} else {
-			let arr;
-			arr = Object.keys(obj);
+			let arr = Object.keys(obj);
 			if (arr.length !== 1) {
 				return 1;
 			} else {
-				if (this.checkKey(arr[0], "s")) {
-					return 1;
-				} else if (typeof obj[arr[0]] !== "string") {
+				if (this.checkKey(arr[0], "s") || typeof obj[arr[0]] !== "string") {
 					return 1;
 				}
-				if (obj[arr[0]].includes("*")) {
-					if (obj[arr[0]].length > 2) {
-						if (obj[arr[0]].substring(1, obj[arr[0]].length - 1).includes("*")) {
-							return 1;
-						}
+				if (obj[arr[0]].includes("*") && obj[arr[0]].length > 2) {
+					if (obj[arr[0]].substring(1, obj[arr[0]].length - 1).includes("*")) {
+						return 1;
 					}
 				}
 			}
 			return 0;
 		}
 	}
+
 	private checkColumn(arr: any): number {
 		if (!Array.isArray(arr) || arr.length === 0) {
 			return 1;
@@ -243,6 +242,7 @@ export class CheckSection {
 			return 0;
 		}
 	}
+
 	private checkOrder(obj: any): number {
 		if (typeof obj.ORDER === "string") {
 			if (!obj.COLUMNS.includes(obj.ORDER)) {
@@ -282,8 +282,7 @@ export class CheckSection {
 		} else if (this.dataset !== str.substring(0, div) || !this.ids.includes(this.dataset)) {
 			return 1;
 		}
-		let field: string;
-		field = str.substring(div + 1);
+		let field = str.substring(div + 1);
 		if (type.includes("s")) {
 			if (field === "dept" || field === "id" || field === "instructor" || field === "title" || field === "uuid") {
 				return 0;
