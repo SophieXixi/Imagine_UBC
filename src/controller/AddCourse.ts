@@ -36,7 +36,7 @@ export class AddCourse{
 							if (sections.length === 0) {
 								return reject(new InsightError("No valid section! Bad Dataset"));
 							}
-							let dataset = new Dataset(ID, sections, InsightDatasetKind.Sections);
+							let dataset = new Dataset(ID, sections, kind);
 							const re = InsightFacade.store(ID, dataset);
 							return fulfill(re);
 						})
@@ -67,7 +67,7 @@ export class AddCourse{
 						result.Pass === undefined ||
 						result.Fail === undefined
 					) {
-						console.log("missingfiled");
+						// console.log("missingfiled");
 					} else {
 						let yr: number = 0;
 						if (result.Section === "overall") {

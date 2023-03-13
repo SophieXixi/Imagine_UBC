@@ -180,6 +180,126 @@ describe("InsightFacade", function () {
 			const result = facade.addDataset("notable", notable, InsightDatasetKind.Rooms);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
+
+					// Remove Dataset Tests
+		it("should reject with  an empty dataset id to remove", function () {
+			const result = facade.removeDataset("");
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with whitespace dataset id to remove", function () {
+			const result = facade.removeDataset(" ");
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with underscore dataset id to remove", function () {
+			const result = facade.removeDataset("ubc_");
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject when no dataset been added,nonexit dataset id to remove", function () {
+			const result = facade.removeDataset("nonexist");
+			return expect(result).to.eventually.be.rejectedWith(NotFoundError);
+		});
+
+		it("should reject with datasat added but an nonexist dataset id to remove", async function () {
+			try {
+				await facade.addDataset("removecourse", campus, InsightDatasetKind.Rooms);
+				await facade.removeDataset("nonexist");
+				expect.fail("should have been rejected!");
+			} catch (err) {
+				expect(err).to.be.instanceOf(NotFoundError);
+			}
+		});
+
+		it("should successfully remove one added id", async function () {
+				// Setup
+			await facade.addDataset("remove", campus, InsightDatasetKind.Rooms);
+				// Execution
+			const removeid = await facade.removeDataset("remove");
+				// Validation
+			expect(removeid).to.deep.equal("remove");
+		});
+
+		it("should successfully remove the second", async function () {
+				// Setup
+			await facade.addDataset("add1", campus, InsightDatasetKind.Rooms);
+			await facade.addDataset("add2", campus, InsightDatasetKind.Rooms);
+				// Execution
+			const removeid = await facade.removeDataset("add2");
+				// Validation
+			expect(removeid).to.deep.equal("add2");
+		});
+
+		it("should successfully for combination", async function () {
+			await facade.addDataset("add1", campus, InsightDatasetKind.Rooms);
+			await facade.addDataset("add2", campus, InsightDatasetKind.Rooms);
+			await facade.removeDataset("add2");
+			const left = await facade.listDatasets();
+			expect(left).to.deep.equal([
+				{
+					id: "add1",
+					kind: InsightDatasetKind.Rooms,
+					numRows: 364,
+				},
+			]);
+		});
+
+			// List Dataset Tests
+		it("should list no dataset when no add", function () {
+			const datasets = facade.listDatasets();
+			return expect(datasets).to.eventually.deep.equal([]);
+		});
+
+		it("should list one dataset", async function () {
+				// Setup
+			await facade.addDataset("list", campus, InsightDatasetKind.Rooms);
+				// Execution
+			const datasets = await facade.listDatasets();
+				// Validation
+			expect(datasets).to.deep.equal([
+				{
+					id: "list",
+					kind: InsightDatasetKind.Rooms,
+					numRows: 364,
+				},
+			]);
+		});
+
+			// fixxxx
+		it("should list several datasets", async function () {
+				// Setup
+			await facade.addDataset("sev1", campus, InsightDatasetKind.Rooms);
+			await facade.addDataset("sev2", campus, InsightDatasetKind.Rooms);
+				// Execution
+			const datasets = await facade.listDatasets();
+				// Validation
+			expect(datasets).to.be.an.instanceOf(Array);
+			expect(datasets).to.have.length(2);
+			const course = datasets.find((dataset) => dataset.id === "sev1");
+			expect(course).to.exist;
+			expect(course).to.deep.equal({
+				id: "sev1",
+				kind: InsightDatasetKind.Rooms,
+				numRows: 364,
+			});
+		});
+
+		it("crash test", async function () {
+			await facade.addDataset("add1", campus, InsightDatasetKind.Rooms);
+			const newfacade = new InsightFacade();
+			expect(facade).to.deep.equal(newfacade);
+			await newfacade.addDataset("add2", campus, InsightDatasetKind.Rooms);
+			await newfacade.removeDataset("add1");
+			const left = await facade.listDatasets();
+			expect(left).to.deep.equal([
+				{
+					id: "add2",
+					kind: InsightDatasetKind.Rooms,
+					numRows: 364,
+				},
+			]);
+		});
  	});
 // });
 

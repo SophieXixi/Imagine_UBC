@@ -3,7 +3,7 @@ import {InsightDatasetKind, InsightError} from "./IInsightFacade";
 import JSZip from "jszip";
 import * as parse5 from "parse5";
 import * as http from "http";
-import {Building, Room} from "./RoomHelper";
+import {Room} from "./RoomHelper";
 import {BuildingTable, RoomTable} from "./TableHelper";
 import {Dataset} from "./DatasetHelper";
 
@@ -36,15 +36,15 @@ export class AddRoom {
 							}
 							BuildingTable.getInfo(buildingtable, BuildingMap);
 							for (let building of BuildingMap.values()) {
-								geoPromises.push(this.buildingGeo(BuildingMap, building));
+								geoPromises.push(this.buildingGeo(building));
 								let htm = zip.file(building.href.substring(2));
 								if (htm !== null) {
 									hrefPromises.push(htm.async("string"));
 								}
 							}
-							Promise.all(geoPromises).then((res) => {
+							Promise.all(geoPromises).then(() => {
 								Promise.all(hrefPromises).then((files) => {
-									return fulfill(this.roomhelper(files, BuildingMap, RoomList, ID));
+									return fulfill(this.roomhelper(files, BuildingMap, RoomList, ID, kind));
 								}).catch((err) => {
 									return reject(err);
 								});
@@ -65,7 +65,8 @@ export class AddRoom {
 		});
 	}
 
-	private roomhelper(files: any, BuildingMap: Map<string, any>, RoomList: Room[], ID: any): Promise<any> {
+	private roomhelper(files: any, BuildingMap: Map<string, any>, RoomList: Room[], ID: any ,
+					   kind: InsightDatasetKind): Promise<any> {
 		return new Promise((fulfill, reject) => {
 			for (let file of files) {
 				let cont = parse5.parse(file);
@@ -77,13 +78,13 @@ export class AddRoom {
 			if (RoomList.length === 0) {
 				return reject(new Error("no valid room!"));
 			}
-			let dataset = new Dataset(ID, RoomList, InsightDatasetKind.Rooms);
+			let dataset = new Dataset(ID, RoomList, kind);
 			const re = InsightFacade.store(ID, dataset);
 			return fulfill(re);
 		});
 	}
 
-	private buildingGeo(Buildings: any, building: any): Promise<any> {
+	private buildingGeo(building: any): Promise<any> {
 		return new Promise((resolve, reject) => {
 			let encode = encodeURIComponent(building.address);
 			let link = "http://cs310.students.cs.ubc.ca:11316/api/v1/project_team122/" + encode;

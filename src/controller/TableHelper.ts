@@ -1,4 +1,5 @@
 import {Building, Room} from "./RoomHelper";
+
 export class BuildingTable{
 	public static findTable(nodes: any): any {
 		let table: any[] = [];
@@ -140,11 +141,9 @@ export class RoomTable{
 				room.lon = building.lon;
 				room.fullname = building.fullname;
 				room.address = building.address;
-				let name = room.shortname + "_" + room.number;
-				room.name = name;
+				room.name = room.shortname + "_" + room.number;
 				RoomList.push(room);
 			}
-			// console.log(RoomList);
 		} catch (e) {
 			//
 		}
@@ -153,7 +152,7 @@ export class RoomTable{
 	public static getBuilding(href: any): string{
 		let building: string = "";
 		// Extract the building name from the href using regular expressions
-		const regex = /\/([A-Z]+-[0-9]+)/;
+		const regex = /\/([A-Z]+-[A-Z]*[0-9]*)/;
 		const match = href.match(regex);
 		if (match !== null) {
 			building = match[1].split("-")[0];

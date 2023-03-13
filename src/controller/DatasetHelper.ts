@@ -11,7 +11,7 @@ export class Dataset {
 		this.kind = kind;
 		this.insightDataset = {
 			id: this.id,
-			kind: InsightDatasetKind.Sections,
+			kind: this.kind,
 			numRows: this.sections.length,
 		};
 	}

@@ -23,7 +23,7 @@ export default class InsightFacade implements IInsightFacade {
 	private static datasets: Map<string, Dataset>;
 	private static IDs: string[];
 	constructor() {
-		console.log("InsightFacadeImpl::init()");
+		// console.log("InsightFacadeImpl::init()");
 		InsightFacade.datasets = new Map<string, Dataset>();
 		InsightFacade.IDs = [];
 		InsightFacade.checkcrash(InsightFacade.IDs, InsightFacade.datasets);
@@ -31,7 +31,7 @@ export default class InsightFacade implements IInsightFacade {
 
 	public addDataset(ID: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
 		return new Promise((fulfill, reject) => {
-			if (InsightFacade.checkValidID(ID, kind)) {
+			if (InsightFacade.checkValidID(ID)) {
 				return reject(new InsightError("Invalid Dataset ID!"));
 			}
 
@@ -186,7 +186,7 @@ export default class InsightFacade implements IInsightFacade {
 		return this.IDs;
 	}
 
-	private static checkValidID(ID: string, kind: InsightDatasetKind): boolean {
+	private static checkValidID(ID: string): boolean {
 		return (
 			// empty string case
 			ID === null ||
