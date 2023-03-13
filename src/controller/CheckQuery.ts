@@ -9,9 +9,11 @@ export class CheckQuery {
 		this.dataset = "";
 		this.ids = ids;
 	}
+
 	public getDataset(): string {
 		return this.dataset;
 	}
+
 	/* if query is invalid, return 1;
 	   if query is valid, return 0;
 	 */
@@ -107,6 +109,7 @@ export class CheckQuery {
 		}
 		return res;
 	}
+
 	private checkQueryOrAnd(arr: any): number {
 		if (!Array.isArray(arr)) {
 			// console.log("or-array");
@@ -131,6 +134,7 @@ export class CheckQuery {
 			return 0;
 		}
 	}
+
 	private checkQueryNot(obj: any): number {
 		// console.log(obj);
 		if (typeof obj !== "object") {
@@ -146,6 +150,7 @@ export class CheckQuery {
 			}
 		}
 	}
+
 	private checkQueryGtLtEq(obj: any): number {
 		// console.log("gtlteq");
 		if (typeof obj !== "object") {
@@ -173,6 +178,7 @@ export class CheckQuery {
 			}
 		}
 	}
+
 	private checkQueryIs(obj: any): number {
 		if (typeof obj !== "object") {
 			// console.log("is-object");
@@ -203,6 +209,7 @@ export class CheckQuery {
 			return 0;
 		}
 	}
+
 	private checkKey(str: string, type: string): number {
 		let div: number;
 		div = str.search("_");
@@ -237,6 +244,7 @@ export class CheckQuery {
 		}
 		return 1;
 	}
+
 	private checkColumn(arr: any): number {
 		if (!Array.isArray(arr)) {
 			return 1;
@@ -253,6 +261,7 @@ export class CheckQuery {
 			return 0;
 		}
 	}
+
 	private checkOrder(obj: any): number {
 		if (typeof obj.ORDER !== "string") {
 			return 1;
