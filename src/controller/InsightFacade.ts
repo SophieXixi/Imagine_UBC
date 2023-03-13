@@ -1,11 +1,18 @@
-import {IInsightFacade, InsightDataset, InsightDatasetKind, InsightError, InsightResult, NotFoundError,
-	ResultTooLargeError} from "./IInsightFacade";
-import JSZip from "jszip";
+import {
+	IInsightFacade,
+	InsightDataset,
+	InsightDatasetKind,
+	InsightError,
+	InsightResult,
+	NotFoundError
+} from "./IInsightFacade";
 import {Section} from "./CourseHelper";
 import {Dataset} from "./DatasetHelper";
 import * as fs from "fs-extra";
 import {CheckQuery} from "./CheckQuery";
 import {SearchQuery} from "./SearchQuery";
+import {AddCourse} from "./AddCourse";
+import {AddRoom} from "./AddRoom";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -15,53 +22,34 @@ import {SearchQuery} from "./SearchQuery";
 export default class InsightFacade implements IInsightFacade {
 	private static datasets: Map<string, Dataset>;
 	private static IDs: string[];
-
 	constructor() {
-		console.log("InsightFacadeImpl::init()");
+		// console.log("InsightFacadeImpl::init()");
 		InsightFacade.datasets = new Map<string, Dataset>();
 		InsightFacade.IDs = [];
 		InsightFacade.checkcrash(InsightFacade.IDs, InsightFacade.datasets);
 	}
 
 	public addDataset(ID: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
-		let promises: any[] = [];
-		let sections: Section[] = [];
 		return new Promise((fulfill, reject) => {
-			if (InsightFacade.checkValidID(ID, kind)) {
+			if (InsightFacade.checkValidID(ID)) {
 				return reject(new InsightError("Invalid Dataset ID!"));
 			}
-			let newzip = new JSZip();
-			newzip
-				.loadAsync(content, {base64: true})
-				.then(function (zip) {
-					try {
-						zip.folder("courses")?.forEach((relativePath: string, file: any) => {
-							promises.push(file.async("text"));
-						});
-						if (promises.length === 0) {
-							return reject(new InsightError("Empty dataset! Reject!"));
-						}
-					} catch {
-						return reject(new InsightError("Cannot open folder! Reject!"));
-					}
-					Promise.all(promises)
-						.then((results) => {
-							InsightFacade.eachfile(results, sections);
-						}).then(() => {
-							if (sections.length === 0) {
-								return reject(new InsightError("No valid section! Bad Dataset"));
-							}
-							let dataset = new Dataset(ID, sections);
-							const re = InsightFacade.store(ID, dataset);
-							return fulfill(re);
-						})
-						.catch((err) => {
-							return reject(err);
-						});
-				})
-				.catch(() => {
-					return reject(new InsightError("Not a zip file, failed to load!"));
+
+			if (kind === InsightDatasetKind.Sections){
+				let courses = new AddCourse(this);
+				courses.addCourse(ID, content, kind).then((r)  =>{
+					return fulfill(r);
+				}).catch((e: any) => {
+					return reject(e);
 				});
+			} else {
+				let rooms = new AddRoom(this);
+				rooms.addRoom(ID, content, kind).then((r)  =>{
+					return fulfill(r);
+				}).catch((e: any) => {
+					return reject(e);
+				});
+			}
 		});
 	}
 
@@ -189,7 +177,7 @@ export default class InsightFacade implements IInsightFacade {
 		});
 	}
 
-	private static store(ID: string, dataset: Dataset): string[] {
+	public static store(ID: string, dataset: Dataset): string[] {
 		fs.ensureDirSync("./data");
 		const json = JSON.stringify(dataset);
 		fs.writeFileSync("./data/" + dataset.id + ".json", json);
@@ -198,7 +186,7 @@ export default class InsightFacade implements IInsightFacade {
 		return this.IDs;
 	}
 
-	private static checkValidID(ID: string, kind: InsightDatasetKind): boolean {
+	private static checkValidID(ID: string): boolean {
 		return (
 			// empty string case
 			ID === null ||
@@ -206,8 +194,9 @@ export default class InsightFacade implements IInsightFacade {
 			!ID.trim() ||
 			ID.includes("_") ||
 			InsightFacade.IDs.includes(ID) ||
-			fs.existsSync("./data/" + ID + ".json") ||
-			kind !== InsightDatasetKind.Sections
+			fs.existsSync("./data/" + ID + ".json")
+			// C2
+			// kind !== InsightDatasetKind.Sections
 		);
 	}
 
@@ -238,57 +227,10 @@ export default class InsightFacade implements IInsightFacade {
 						);
 						sections.push(section);
 					}
-					const dataset = new Dataset(id, sections);
+					const dataset = new Dataset(id, sections, InsightDatasetKind.Sections);
 					datasets.set(id, dataset);
 				}
 			});
-		}
-	}
-
-	private static eachfile(results: any[], sections: Section[]) {
-		for (const data of results) {
-			try {
-				let parse = JSON.parse(data);
-				for (const result of parse.result) {
-					if (
-						result.id === undefined ||
-						result.Course === undefined ||
-						result.Title === undefined ||
-						result.Professor === undefined ||
-						result.Subject === undefined ||
-						result.Section === undefined ||
-						result.Avg === undefined ||
-						result.Audit === undefined ||
-						result.Pass === undefined ||
-						result.Fail === undefined
-					) {
-						console.log("missingfiled");
-					} else {
-						let yr: number = 0;
-						if (result.Section === "overall") {
-							yr = 1900;
-						} else {
-							yr = +result.Year;
-						}
-						// each section is formed into section name + content
-						const sec = new Section(
-							result.id.toString(),
-							result.Course,
-							result.Title,
-							result.Professor,
-							result.Subject,
-							yr,
-							result.Avg,
-							result.Audit,
-							result.Pass,
-							result.Fail
-						);
-						sections.push(sec);
-					}
-				}
-			} catch {
-				//
-			}
 		}
 	}
 }
