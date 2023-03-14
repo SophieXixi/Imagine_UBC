@@ -43,7 +43,7 @@ export class AddRoom {
 
 									return fulfill(this.htmhelper(BuildingMap, zip, RoomList, ID, kind));
 								} catch (e) {
-									return reject(new Error("parse error"));
+									return reject(new InsightError("parse error"));
 								}
 							})
 							.catch(() => {
