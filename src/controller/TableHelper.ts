@@ -23,6 +23,8 @@ export class BuildingTable{
 		let c1: boolean = false;
 		let c2: boolean = false;
 		let c3: boolean = false;
+		let c4: boolean = false;
+		let c5: boolean = false;
 		let tr = table.childNodes.filter((row: any) => row.nodeName === "tr")[0];
 		for (let td of tr.childNodes.filter((column: any) => column.nodeName === "td")) {
 			if (td.attrs[0].name === "class") {
@@ -36,9 +38,15 @@ export class BuildingTable{
 				if (value === "views-field views-field-field-building-address") {
 					c3 = true;
 				}
+				if (value === "views-field views-field-field-building-image") {
+					c4 = true;
+				}
+				if (value === "views-field views-field-nothing") {
+					c5 = true;
+				}
 			}
 		}
-		return (c1 && c2 && c3);
+		return (c1 && c2 && c3 && c4 && c5);
 	}
 
 	public static getInfo(table: any, Map: Map<string, any>): Map<string, any> {
@@ -123,6 +131,7 @@ export class RoomTable{
 		let c2: boolean = false;
 		let c3: boolean = false;
 		let c4: boolean = false;
+		let c5: boolean = false;
 		let tr = table.childNodes.filter((row: any) => row.nodeName === "tr")[0];
 		for (let td of tr.childNodes.filter((column: any) => column.nodeName === "td")) {
 			if (td.attrs[0].name === "class") {
@@ -139,9 +148,12 @@ export class RoomTable{
 				if (value === "views-field views-field-field-room-type") {
 					c4 = true;
 				}
+				if (value === "views-field views-field-nothing") {
+					c5 = true;
+				}
 			}
 		}
-		return (c1 && c2 && c3 && c4);
+		return (c1 && c2 && c3 && c4 && c5);
 	}
 
 	public static getInfo(Map: Map<string,any>, table: any, RoomList: Room[]) {
