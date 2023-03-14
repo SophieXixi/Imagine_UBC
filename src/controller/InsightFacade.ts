@@ -18,7 +18,6 @@ import {DisplayRoom} from "./DisplayRoom";
 import {CheckSection} from "./CheckSection";
 import {SearchSection} from "./SearchSection";
 import {DisplaySection} from "./DisplaySection";
-import {Room} from "./RoomHelper";
 
 /**
  * This is the main programmatic entry point for the project.
