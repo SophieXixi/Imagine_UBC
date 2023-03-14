@@ -22,7 +22,6 @@ export class SearchSection {
 			if (this.valid_sections.length > 5000) {
 				return reject(new ResultTooLargeError("> 5000"));
 			} else {
-				console.log(this.valid_sections.length);
 				return resolve(this.valid_sections);
 			}
 		});

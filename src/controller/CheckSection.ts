@@ -120,11 +120,11 @@ export class CheckSection {
 							return 1;
 						} else {
 							let arr = Object.keys(apply[app[0]]);
-							if (arr.length !== 1 || !(arr[0] === "MAX" || arr[0] === "AVG" || arr[0] === "MIN"
-								|| arr[0] === "COUNT" || arr[0] === "SUM")) {
+							if (arr.length !== 1) {
 								return 1;
 							} else if (arr[0] === "MAX" || arr[0] === "AVG" || arr[0] === "MIN" || arr[0] === "SUM") {
-								if (this.checkKey(apply[app[0]][arr[0]], "m")) {
+								if (Array.isArray(apply[app[0]][arr[0]]) ||
+									this.checkKey(apply[app[0]][arr[0]], "m")) {
 									return 1;
 								}
 							} else if (this.checkKey(apply[app[0]][arr[0]], "sm")) {
@@ -272,9 +272,12 @@ export class CheckSection {
 		return 1;
 	}
 
-	private checkKey(str: string, type: string): number {
-		let div = str.search("_");
-		if (div === 0) {
+	private checkKey(str: any, type: string): number {
+		if (typeof str !== "string") {
+			return 1;
+		}
+		let div: number = str.indexOf("_");
+		if (div === 0 || div === -1) {
 			return 1;
 		}
 		if (this.dataset === "") {
@@ -283,15 +286,13 @@ export class CheckSection {
 			return 1;
 		}
 		let field = str.substring(div + 1);
-		if (type.includes("s")) {
-			if (field === "dept" || field === "id" || field === "instructor" || field === "title" || field === "uuid") {
-				return 0;
-			}
+		if (type.includes("s") && (field === "dept" || field === "id" || field === "instructor" ||
+			field === "title" || field === "uuid")) {
+			return 0;
 		}
-		if (type.includes("m")) {
-			if (field === "year" || field === "pass" || field === "fail" || field === "audit" || field === "avg") {
-				return 0;
-			}
+		if (type.includes("m") && (field === "year" || field === "pass" || field === "fail" ||
+			field === "audit" || field === "avg")) {
+			return 0;
 		}
 		return 1;
 	}
