@@ -10,11 +10,10 @@ export class SearchSection {
 		this.valid_sections = [];
 	}
 
-	public searchQuery(): Promise<Section[]> {
+	public searchSection(): Promise<Section[]> {
 		return new Promise((resolve, reject) => {
 			for (const sec of this.unchecked) {
-				let num: number;
-				num = this.filterSection(sec);
+				let num = this.filterSection(sec);
 				if (num === 0) {
 					this.valid_sections.push(sec);
 				}
@@ -132,10 +131,8 @@ export class SearchSection {
 		let field = array[0].substring(array[0].search("_") + 1);
 		if (field === "avg") {
 			if (sec.avg < obj[arr[0]][array[0]]) {
-				// console.log(obj[arr[0]][array[0]]);
 				return 0;
 			} else {
-				// console.log(obj[arr[0]][array[0]]);
 				return 1;
 			}
 		} else if (field === "pass") {
