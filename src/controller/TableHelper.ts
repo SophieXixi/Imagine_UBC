@@ -1,7 +1,7 @@
 import {Building, Room} from "./RoomHelper";
 import http from "http";
 
-export class BuildingTable{
+export class BuildingTable {
 	public static findTable(nodes: any): any {
 		let table: any[] = [];
 		// empty child node
@@ -46,64 +46,78 @@ export class BuildingTable{
 				}
 			}
 		}
-		return (c1 && c2 && c3 && c4 && c5);
+		return c1 && c2 && c3 && c4 && c5;
 	}
 
-	public static getInfo(table: any, Map: Map<string, any>): Map<string, any> {
-		let rows = table[0].childNodes.filter((row: any) => row.nodeName === "tr");
-		for (let tr of rows) {
-			let code: string = "";
-			let href: string = "";
-			let building: string = "";
-			let address: string = "";
-			for (let td of tr.childNodes.filter((column: any) => column.nodeName === "td")) {
-				if (td.attrs[0].name === "class") {
-					const value = td.attrs[0].value;
-					if (value === "views-field views-field-field-building-code") {
-						code = td.childNodes[0].value.trim();
-					}
-					if (value === "views-field views-field-title") {
-						href = td.childNodes[1].attrs[0].value;
-						building = td.childNodes[1].childNodes[0].value.trim();
-					}
-					if (value === "views-field views-field-field-building-address") {
-						address = td.childNodes[0].value.trim();
+	public static async getInfo(table: any, Map: Map<string, any>): Promise<any> {
+		return new Promise((resolve) => {
+			let rows = table[0].childNodes.filter((row: any) => row.nodeName === "tr");
+			let promises = [];
+			for (let tr of rows) {
+				let code: string = "";
+				let href: string = "";
+				let building: string = "";
+				let address: string = "";
+				let lat: number = 0;
+				let lon: number = 0;
+				for (let td of tr.childNodes.filter((column: any) => column.nodeName === "td")) {
+					if (td.attrs[0].name === "class") {
+						const value = td.attrs[0].value;
+						if (value === "views-field views-field-field-building-code") {
+							code = td.childNodes[0].value.trim();
+						}
+						if (value === "views-field views-field-title") {
+							href = td.childNodes[1].attrs[0].value;
+							building = td.childNodes[1].childNodes[0].value.trim();
+						}
+						if (value === "views-field views-field-field-building-address") {
+							address = td.childNodes[0].value.trim();
+						}
 					}
 				}
+				let promise = BuildingTable.getGeo(address, lat, lon).then((r: any) => {
+					lat = r.lat;
+					lon = r.lon;
+					return new Building(building, code, address, lat, lon, href);
+				});
+				promises.push(promise);
 			}
-			let B = new Building(building, code, address, 0, 0, href);
-			Map.set(code, B);
-		}
-		return Map;
+			Promise.all(promises).then((re) => {
+				for (let build of re) {
+					if ((build.lat !== 0) && (build.lon !== 0)){
+						Map.set(build.shortname, build);
+					}
+				}
+				return resolve(Map);
+			});
+		});
 	}
 
-	public static buildingGeo(buildings: any): Promise<any> {
+	public static getGeo(address: string, lat: number, lon: number) {
 		return new Promise((resolve, reject) => {
-			for (let building of buildings){
-				let encode = encodeURIComponent(building.address);
-				let link = "http://cs310.students.cs.ubc.ca:11316/api/v1/project_team122/" + encode;
-				// the http get call back function take reference from website
-				// reference: https://nodejs.org/api/http.html#httprequesturl-options-callback
-				http.get(link, (res) => {
-					res.setEncoding("utf8");
-					let rawData = "";
-					res.on("data", (chunk) => {
-						rawData += chunk;
-					});
-					res.on("end", () => {
-						try {
-							const parsedData = JSON.parse(rawData);
-							building.lat = parsedData.lat;
-							building.lon = parsedData.lon;
-						} catch (e) {
-							console.error(e);
-						}
-					});
-				}).on("error", (e) => {
-					console.error(`Got error: ${e.message}`);
+			let encode = encodeURIComponent(address);
+			let link = "http://cs310.students.cs.ubc.ca:11316/api/v1/project_team122/" + encode;
+			// the http get call back function take reference from website
+			// reference: https://nodejs.org/api/http.html#httprequesturl-options-callback
+			http.get(link, (res) => {
+				res.setEncoding("utf8");
+				let rawData = "";
+				res.on("data", (chunk) => {
+					rawData += chunk;
 				});
-			}
-			return resolve (buildings);
+				res.on("end", () => {
+					try {
+						const parsedData = JSON.parse(rawData);
+						lat = parsedData.lat;
+						lon = parsedData.lon;
+						return resolve({lat, lon});
+					} catch (err) {
+						return reject(err);
+					}
+				});
+			}).on("error", (err) => {
+				return reject(err);
+			});
 		});
 	}
 }
@@ -190,7 +204,7 @@ export class RoomTable{
 				room.name = room.shortname + "_" + room.number;
 				RoomList.push(room);
 			}
-		} catch (e) {
+		} catch (err) {
 			//
 		}
 		return RoomList;

@@ -14,10 +14,6 @@ export class AddRoom {
 	}
 
 	public addRoom(ID: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
-		async function buildingGeo(BuildingMap: any, buildingtable: any) {
-			BuildingTable.getInfo(buildingtable, BuildingMap);
-			await BuildingTable.buildingGeo(BuildingMap.values());
-		}
 		return new Promise((fulfill, reject) => {
 			let RoomList: Room[] = [];
 			let newzip = new JSZip();
@@ -39,7 +35,7 @@ export class AddRoom {
 									if (buildingtable.length === 0) {
 										return reject(new InsightError("No valid table"));
 									}
-									await buildingGeo(BuildingMap, buildingtable);
+									BuildingMap = await BuildingTable.getInfo(buildingtable, BuildingMap);
 
 									return fulfill(this.htmhelper(BuildingMap, zip, RoomList, ID, kind));
 								} catch (e) {
