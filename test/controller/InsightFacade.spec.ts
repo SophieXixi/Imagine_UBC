@@ -43,6 +43,16 @@ describe("InsightFacade", function () {
 	let campus: string;
 	let indexempty: string;
 	let notable: string;
+	let diffpath: string;
+	let onlyindex: string;
+	let rootfolder: string;
+	let incomp: string;
+	let smalltable: string;
+	let noroom: string;
+	let nophotp: string;
+	let missingcode: string;
+	let ESB: string;
+	let roommissing: string;
 
 	before(function () {
 		// This block runs once and loads the datasets.
@@ -71,6 +81,17 @@ describe("InsightFacade", function () {
 		campus = getContentFromArchives("campus.zip");
 		indexempty = getContentFromArchives("index empty.zip");
 		notable = getContentFromArchives("notable.zip");
+		diffpath = getContentFromArchives("diff path.zip");
+		onlyindex = getContentFromArchives("only index.zip");
+		rootfolder = getContentFromArchives("root folder.zip");
+		incomp = getContentFromArchives("incomp htm.zip");
+		nophotp = getContentFromArchives("no photo.zip");
+		noroom = getContentFromArchives("only index.zip");
+		smalltable = getContentFromArchives("small table.zip");
+		missingcode = getContentFromArchives("missing code.zip");
+		ESB = getContentFromArchives("ESB missing field.zip");
+		roommissing = getContentFromArchives("all missing field.zip");
+
 		// Just in case there is anything hanging around from a previous run of the test suite
 		clearDisk();
 	});
@@ -98,6 +119,7 @@ describe("InsightFacade", function () {
 			clearDisk();
 		});
 
+		// ID check
 		it("should reject with  an empty dataset id", function () {
 			const result = facade.addDataset("", sections, InsightDatasetKind.Rooms);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
@@ -131,14 +153,15 @@ describe("InsightFacade", function () {
 
 		it("should reject with duplicate ids to add dataset", async function () {
 			try {
-				await facade.addDataset("dup", sections, InsightDatasetKind.Rooms);
-				await facade.addDataset("dup", sections, InsightDatasetKind.Rooms);
+				await facade.addDataset("dup", smalltable, InsightDatasetKind.Rooms);
+				await facade.addDataset("dup", smalltable, InsightDatasetKind.Rooms);
 				expect.fail("should be rejected!");
 			} catch (err) {
 				expect(err).to.be.instanceOf(InsightError);
 			}
 		});
 
+		// zip check
 		it("should reject with not zip file", function () {
 			// not a zip file
 			const result = facade.addDataset("notzip", nonzip, InsightDatasetKind.Rooms);
@@ -163,25 +186,80 @@ describe("InsightFacade", function () {
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-		it("should successfully add compus", function () {
+		it("should reject with not empty zip but only index file", function () {
 			// not a zip file
-			const result = facade.addDataset("campus", campus, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.deep.equal(["campus"]);
+			const result = facade.addDataset("only index", onlyindex, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with zip with root folder", function () {
+			// not a zip file
+			const result = facade.addDataset("root folder", rootfolder, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with htm in different path", function () {
+			// not a zip file
+			const result = facade.addDataset("diff path", diffpath, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with wrong zip file", function () {
+			const result = facade.addDataset("empty", small, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should successfully add compus", async function() {
+			const result = await facade.addDataset("campus", campus, InsightDatasetKind.Rooms);
+			return expect(result).to.deep.equal(["campus"]);
+		});
+
+		it("should successfully add incomplete index files", async function() {
+			const result = await facade.addDataset("incomp", incomp, InsightDatasetKind.Rooms);
+			return expect(result).to.deep.equal(["incomp"]);
 		});
 
 		it("should reject with empty index file", function () {
-			// not a zip file
 			const result = facade.addDataset("empty", indexempty, InsightDatasetKind.Rooms);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
 		it("should reject with no table content", function () {
-			// not a zip file
 			const result = facade.addDataset("notable", notable, InsightDatasetKind.Rooms);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
-					// Remove Dataset Tests
+		it("should successfully add with smaller building table", async function() {
+			const result = await facade.addDataset("small", smalltable, InsightDatasetKind.Rooms);
+			return expect(result).to.deep.equal(["small"]);
+		});
+
+		it("should successfully add even one htm missing filed", async function() {
+			const result = await facade.addDataset("missing", ESB, InsightDatasetKind.Rooms);
+			return expect(result).to.deep.equal(["missing"]);
+		});
+
+		it("should reject with all room missing field table", function () {
+			const result = facade.addDataset("empty", roommissing, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with missing field table", function () {
+			const result = facade.addDataset("empty", nophotp, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with no room available", function () {
+			const result = facade.addDataset("empty", noroom, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject with missing code filed", function () {
+			const result = facade.addDataset("notable", missingcode, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		// Remove Dataset Tests
 		it("should reject with  an empty dataset id to remove", function () {
 			const result = facade.removeDataset("");
 			return expect(result).to.eventually.be.rejectedWith(InsightError);

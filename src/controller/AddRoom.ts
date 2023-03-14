@@ -40,6 +40,7 @@ export class AddRoom {
 										return reject(new InsightError("No valid table"));
 									}
 									await buildingGeo(BuildingMap, buildingtable);
+
 									return fulfill(this.htmhelper(BuildingMap, zip, RoomList, ID, kind));
 								} catch (e) {
 									return reject(new Error("parse error"));
@@ -97,7 +98,7 @@ export class AddRoom {
 				}
 			}
 			if (RoomList.length === 0) {
-				return reject(new Error("no valid room!"));
+				return reject(new InsightError("no valid room!"));
 			}
 			let dataset = new Dataset(ID, RoomList, kind);
 			const re = InsightFacade.store(ID, dataset);
