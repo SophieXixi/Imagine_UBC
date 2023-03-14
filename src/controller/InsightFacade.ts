@@ -14,9 +14,11 @@ import {AddCourse} from "./AddCourse";
 import {AddRoom} from "./AddRoom";
 import {Room} from "./RoomHelper";
 import {CheckRoom} from "./CheckRoom";
-import {Display} from "./Display";
+import {DisplayRoom} from "./DisplayRoom";
 import {CheckSection} from "./CheckSection";
 import {SearchSection} from "./SearchSection";
+import {DisplaySection} from "./DisplaySection";
+import {Room} from "./RoomHelper";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -86,18 +88,18 @@ export default class InsightFacade implements IInsightFacade {
 			let query = new CheckSection(InsightFacade.IDs);
 			let quer: any = que;
 			let search;
-			let display: Display;
+			let display;
 			query.checkSection(que)
 				.then(() => {
 					console.log("search section");
 					search = new SearchSection(quer.WHERE, InsightFacade.datasets.get(query.getDataset()));
-					return search.searchQuery();
+					return search.searchSection();
 				})
 				.then((sec) => {
 					console.log("display section");
 					// console.log(sec);
-					display = new Display(sec, query, query.getDataset());
-					return resolve(display.displayQuery());
+					display = new DisplaySection(sec, query, query.getDataset());
+					return resolve(display.displaySections());
 				})
 				.catch(() => {
 					let qu = new CheckRoom(InsightFacade.IDs);
@@ -107,13 +109,13 @@ export default class InsightFacade implements IInsightFacade {
 							search = new SearchRoom(quer.WHERE, InsightFacade.datasets.get(qu.getDataset()));
 							return search.searchRoom();
 						})
-						.then((sec) => {
+						.then((room) => {
 							console.log("display room");
-							display = new Display(sec, quer, qu.getDataset());
-							return resolve(display.displayQuery());
+							display = new DisplayRoom(room, quer, qu.getDataset());
+							return resolve(display.displayRooms());
 						})
-						.catch((er) => {
-							return reject(er);
+						.catch((err) => {
+							return reject(err);
 						});
 				});
 		});

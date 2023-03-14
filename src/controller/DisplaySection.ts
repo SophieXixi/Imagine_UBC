@@ -1,7 +1,7 @@
-import {Section} from "./CourseHelper";
 import {InsightResult} from "./IInsightFacade";
+import {Section} from "./CourseHelper";
 
-export class Display {
+export class DisplaySection {
 	private secs: Section[];
 	private query: any;
 	private id: string;
@@ -16,7 +16,7 @@ export class Display {
 		this.trans = [];
 	}
 
-	public displayQuery(): InsightResult[] {
+	public displaySections(): InsightResult[] {
 		if (this.query.TRANSFORMATIONS) {
 			this.withTrans();
 		} else {
@@ -37,12 +37,12 @@ export class Display {
 	private withoutTrans() {
 		let keys = this.query.OPTIONS.COLUMNS;
 		for (const sec of this.secs) {
-			let obj = this.displaySection(sec, keys, this.id);
+			let obj = this.displaySection(sec, keys);
 			this.result.push(obj);
 		}
 	}
 
-	private displaySection(sec: any, keys: string[], id: string): InsightResult {
+	private displaySection(sec: any, keys: string[]): InsightResult {
 		let obj = Object.create(null);
 		for (const key of keys) {
 			let div = key.substring(key.search("_") + 1);
