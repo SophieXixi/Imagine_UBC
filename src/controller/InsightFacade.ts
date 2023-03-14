@@ -82,10 +82,12 @@ export default class InsightFacade implements IInsightFacade {
 			let display: Display;
 			query.checkSection(que)
 				.then(() => {
+					console.log("search section");
 					search = new SearchSection(quer.WHERE, InsightFacade.datasets.get(query.getDataset()));
 					return search.searchQuery();
 				})
 				.then((sec) => {
+					console.log("display section");
 					// console.log(sec);
 					display = new Display(sec, query, query.getDataset());
 					return resolve(display.displayQuery());
@@ -94,10 +96,12 @@ export default class InsightFacade implements IInsightFacade {
 					let qu = new CheckRoom(InsightFacade.IDs);
 					qu.checkRoom(que)
 						.then(() => {
+							console.log("search room");
 							search = new SearchRoom(quer.WHERE, InsightFacade.datasets.get(qu.getDataset()));
 							return search.searchRoom();
 						})
 						.then((sec) => {
+							console.log("display room");
 							display = new Display(sec, quer, qu.getDataset());
 							return resolve(display.displayQuery());
 						})

@@ -555,7 +555,6 @@ describe("InsightFacade", function () {
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 	});
-});
 //
 // 		// !!!
 // 		// content-dataset-invalid: not under the folder courses
@@ -876,54 +875,102 @@ describe("InsightFacade", function () {
 //
 // 	});
 //
-// 	describe("PerformQuery", () => {
-//
-// 		before(function () {
-// 			console.info(`Before: ${this.test?.parent?.title}`);
-// 			facade = new InsightFacade();
-// 			// Load the datasets specified in datasetsToQuery and add them to InsightFacade.
-// 			// Will *fail* if there is a problem reading ANY dataset.
-// 			const loadDatasetPromises = [facade.addDataset("sections", sections, InsightDatasetKind.Sections)];
-// 			return Promise.all(loadDatasetPromises);
-// 		});
-//
-// 		after(function () {
-// 			console.info(`After: ${this.test?.parent?.title}`);
-// 			clearDisk();
-// 		});
-//
-// 		type Input = unknown;
-// 		type Output = Promise<InsightResult[]>;
-// 		type Error = "InsightError" | "ResultTooLargeError";
-// 		let FACADE = new InsightFacade();
-//
-// 		function errorValidator(error: any): error is Error {
-// 			return error === "InsightError" || error === "ResultTooLargeError";
-// 		}
-//
-// 		function assertOnError(actual: any, expected: Error): void {
-// 			if (expected === "InsightError") {
-// 				expect(actual).to.be.instanceof(InsightError);
-// 			} else if (expected === "ResultTooLargeError") {
-// 				expect(actual).to.be.instanceof(ResultTooLargeError);
-// 			} else {
-// 				expect.fail("there is an unexpected error");
-// 			}
-// 		}
-//
-// 		function assertOnResult(actual: unknown, expected: Output): void {
-// 			expect(actual).to.deep.equal(expected);
-// 		}
-//
-// 		folderTest<Input, Output, Error>(
-// 			"Dynamic InsightFacade PerformQuery tests - simple",
-// 			(input) => FACADE.performQuery(input),
-// 			"./test/resources/invalid",
-// 			{
-// 				errorValidator,
-// 				assertOnError,
-// 				assertOnResult
-// 			}
-// 		);
-// 	});
-// });
+	describe("PerformQuery", () => {
+
+		before(function () {
+			console.info(`Before: ${this.test?.parent?.title}`);
+			facade = new InsightFacade();
+		// Load the datasets specified in datasetsToQuery and add them to InsightFacade.
+		// Will *fail* if there is a problem reading ANY dataset.
+			const loadDatasetPromises = [facade.addDataset("rooms", campus, InsightDatasetKind.Rooms)];
+
+			return Promise.all(loadDatasetPromises);
+		});
+
+		after(function () {
+			console.info(`After: ${this.test?.parent?.title}`);
+			clearDisk();
+		});
+
+	type Input = unknown;
+	type Output = Promise<InsightResult[]>;
+	type Error = "InsightError" | "ResultTooLargeError";
+
+	function errorValidator(error: any): error is Error {
+		return error === "InsightError" || error === "ResultTooLargeError";
+	}
+
+	function assertOnError(actual: any, expected: Error): void {
+		if (expected === "InsightError") {
+			expect(actual).to.be.instanceof(InsightError);
+		} else if (expected === "ResultTooLargeError") {
+			expect(actual).to.be.instanceof(ResultTooLargeError);
+		} else {
+			expect.fail("there is an unexpected error");
+		}
+	}
+	function assertOnResult(actual: unknown, expected: Output): void {
+		expect(actual).to.deep.equal(expected);
+	}
+	folderTest<Input, Output, Error>(
+		"test",
+		(input) => facade.performQuery(input),
+		"./test/resources/try",
+		{
+			errorValidator,
+			assertOnError,
+			assertOnResult
+		}
+	);
+	folderTest<Input, Output, Error>(
+		"invalid-room",
+		(input) => facade.performQuery(input),
+		"./test/resources/invalid-room",
+		{
+			errorValidator,
+			assertOnError,
+			assertOnResult
+		}
+	);
+	folderTest<Input, Output, Error>(
+		"invalid-section",
+		(input) => facade.performQuery(input),
+		"./test/resources/invalid-section",
+		{
+			errorValidator,
+			assertOnError,
+			assertOnResult
+		}
+	);
+	folderTest<Input, Output, Error>(
+		"success-not full order",
+		(input) => facade.performQuery(input),
+		"./test/resources/success-not full order",
+		{
+			errorValidator,
+			assertOnError,
+			assertOnResult
+		}
+	);
+	folderTest<Input, Output, Error>(
+		"success-room",
+		(input) => facade.performQuery(input),
+		"./test/resources/success-room",
+		{
+			errorValidator,
+			assertOnError,
+			assertOnResult
+		}
+	);
+	// folderTest<Input, Output, Error>(
+	//  "success-section",
+	//  (input) => facade.performQuery(input),
+	//  "./test/resources/success-section",
+	//  {
+	//   errorValidator,
+	//   assertOnError,
+	//   assertOnResult
+	//  }
+	// );
+	});
+});

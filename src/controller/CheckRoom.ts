@@ -70,8 +70,9 @@ export class CheckRoom {
 					if (this.checkOrder(query.OPTIONS)) {
 						return 1;
 					}
+				} else {
+					return 1;
 				}
-				return 1;
 			}
 			return 0;
 		}
@@ -111,8 +112,8 @@ export class CheckRoom {
 				if (typeof apply !== "object") {
 					return 1;
 				} else {
-					let app = Object.keys(apply);
-					if (app.length !== 1) {
+					let app = Object.keys(apply);  // apply key
+					if (app.length !== 1 || app[0].includes("_")) {
 						return 1;
 					} else {
 						if (typeof apply[app[0]] !== "object") {
@@ -272,9 +273,12 @@ export class CheckRoom {
 		return 1;
 	}
 
-	private checkKey(str: string, type: string): number {
-		let div = str.search("_");
-		if (div === 0) {
+	private checkKey(str: any, type: string): number {
+		if (typeof str !== "string") {
+			return 1;
+		}
+		let div: number = str.indexOf("_");
+		if (div === 0 || div === -1) {
 			return 1;
 		}
 		if (this.dataset === "") {
@@ -283,17 +287,12 @@ export class CheckRoom {
 			return 1;
 		}
 		let field = str.substring(div + 1);
-		if (type.includes("s")) {
-			if (field === "fullname" || field === "shortname" || field === "number" || field === "name") {
-				return 0;
-			} else if (field === "address" || field === "type" || field === "furniture" || field === "href") {
-				return 0;
-			}
+		if (type.includes("s") && (field === "fullname" || field === "shortname" || field === "number" ||
+			field === "name" || field === "address" || field === "type" || field === "furniture" || field === "href")) {
+			return 0;
 		}
-		if (type.includes("m")) {
-			if (field === "lat" || field === "lon" || field === "seats") {
-				return 0;
-			}
+		if (type.includes("m") && (field === "lat" || field === "lon" || field === "seats")) {
+			return 0;
 		}
 		return 1;
 	}
