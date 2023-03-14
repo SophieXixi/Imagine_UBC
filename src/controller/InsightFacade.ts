@@ -13,6 +13,7 @@ import {CheckQuery} from "./CheckQuery";
 import {SearchQuery} from "./SearchQuery";
 import {AddCourse} from "./AddCourse";
 import {AddRoom} from "./AddRoom";
+import {Room} from "./RoomHelper";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -35,20 +36,26 @@ export default class InsightFacade implements IInsightFacade {
 				return reject(new InsightError("Invalid Dataset ID!"));
 			}
 
-			if (kind === InsightDatasetKind.Sections){
+			if (kind === InsightDatasetKind.Sections) {
 				let courses = new AddCourse(this);
-				courses.addCourse(ID, content, kind).then((r)  =>{
-					return fulfill(r);
-				}).catch((e: any) => {
-					return reject(e);
-				});
+				courses
+					.addCourse(ID, content, kind)
+					.then((r) => {
+						return fulfill(r);
+					})
+					.catch((e: any) => {
+						return reject(e);
+					});
 			} else {
 				let rooms = new AddRoom(this);
-				rooms.addRoom(ID, content, kind).then((r)  =>{
-					return fulfill(r);
-				}).catch((e: any) => {
-					return reject(e);
-				});
+				rooms
+					.addRoom(ID, content, kind)
+					.then((r) => {
+						return fulfill(r);
+					})
+					.catch((e: any) => {
+						return reject(e);
+					});
 			}
 		});
 	}
@@ -73,7 +80,7 @@ export default class InsightFacade implements IInsightFacade {
 
 	public performQuery(que: unknown): Promise<InsightResult[]> {
 		return new Promise((resolve, reject) => {
- 			let query: CheckQuery;
+			let query: CheckQuery;
 			query = new CheckQuery(InsightFacade.IDs);
 			let quer: any = que;
 			let search: SearchQuery;
@@ -198,13 +205,12 @@ export default class InsightFacade implements IInsightFacade {
 			ID.includes("_") ||
 			InsightFacade.IDs.includes(ID) ||
 			fs.existsSync("./data/" + ID + ".json")
-			// C2
-			// kind !== InsightDatasetKind.Sections
 		);
 	}
 
 	private static checkcrash(IDs: string[], datasets: Map<string, Dataset>) {
 		const dir = "./data";
+		let dataset: Dataset;
 		if (fs.existsSync(dir)) {
 			// old datasets already exist
 			fs.readdirSync(dir).forEach((file) => {
@@ -214,26 +220,56 @@ export default class InsightFacade implements IInsightFacade {
 				}
 				if (!datasets.has(id)) {
 					const obj = fs.readJsonSync("./data/" + id + ".json");
-					const sections: Section[] = [];
-					for (const sec of obj.sections) {
-						const section = new Section(
-							sec.uuid,
-							sec.id,
-							sec.title,
-							sec.instructor,
-							sec.dept,
-							sec.year,
-							sec.avg,
-							sec.pass,
-							sec.fail,
-							sec.audit
-						);
-						sections.push(section);
+					if (obj.rooms.length === 0) {
+						dataset = this.crashSection(obj, id);
 					}
-					const dataset = new Dataset(id, sections, InsightDatasetKind.Sections);
+					if (obj.sections.length === 0) {
+						dataset = this.crashRoom(obj,id);
+					}
 					datasets.set(id, dataset);
 				}
 			});
 		}
+	}
+
+	private static crashSection(obj: any, id: string) {
+		const sections: Section[] = [];
+		for (const sec of obj.sections) {
+			const section = new Section(
+				sec.uuid,
+				sec.id,
+				sec.title,
+				sec.instructor,
+				sec.dept,
+				sec.year,
+				sec.avg,
+				sec.pass,
+				sec.fail,
+				sec.audit
+			);
+			sections.push(section);
+		}
+		return new Dataset(id, sections, InsightDatasetKind.Sections);
+	}
+
+	private static crashRoom(obj: any, id: string) {
+		const rooms: Room[] = [];
+		for (const room of obj.rooms) {
+			const r = new Room(
+				room.fullname,
+				room.shortname,
+				room.address,
+				room.lat,
+				room.lon,
+				room.href,
+				room.number,
+				room.name,
+				room.seats,
+				room.type,
+				room.furniture
+			);
+			rooms.push(r);
+		}
+		return new Dataset(id, rooms, InsightDatasetKind.Rooms);
 	}
 }
