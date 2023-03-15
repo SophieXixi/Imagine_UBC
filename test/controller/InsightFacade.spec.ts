@@ -4,7 +4,7 @@ import {
 	InsightError,
 	InsightResult,
 	NotFoundError,
-	ResultTooLargeError,
+	ResultTooLargeError
 } from "../../src/controller/IInsightFacade";
 import InsightFacade from "../../src/controller/InsightFacade";
 
@@ -882,7 +882,7 @@ describe("InsightFacade", function () {
 			facade = new InsightFacade();
 		// Load the datasets specified in datasetsToQuery and add them to InsightFacade.
 		// Will *fail* if there is a problem reading ANY dataset.
-			const loadDatasetPromises = [facade.addDataset("rooms", campus, InsightDatasetKind.Rooms)];
+			const loadDatasetPromises = [facade.addDataset("sections", section, InsightDatasetKind.Sections)];
 
 			return Promise.all(loadDatasetPromises);
 		});
@@ -962,15 +962,15 @@ describe("InsightFacade", function () {
 			assertOnResult
 		}
 	);
-	// folderTest<Input, Output, Error>(
-	//  "success-section",
-	//  (input) => facade.performQuery(input),
-	//  "./test/resources/success-section",
-	//  {
-	//   errorValidator,
-	//   assertOnError,
-	//   assertOnResult
-	//  }
-	// );
+	folderTest<Input, Output, Error>(
+	 "success-section",
+	 (input) => facade.performQuery(input),
+	 "./test/resources/success-section",
+	 {
+	  errorValidator,
+	  assertOnError,
+	  assertOnResult
+	 }
+	);
 	});
 });

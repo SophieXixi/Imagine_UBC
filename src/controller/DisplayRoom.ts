@@ -1,5 +1,6 @@
 import {Room} from "./RoomHelper";
 import {InsightResult} from "./IInsightFacade";
+import Decimal from "decimal.js";
 
 export class DisplayRoom {
 	private rooms: Room[];
@@ -159,7 +160,7 @@ export class DisplayRoom {
 	private checkGroup(sec: any, i: number, keys: string[]): number{
 		for (const key of keys) {
 			let div = key.substring(key.search("_") + 1);
-			if (sec[div] !== this.trans[i][div]) {
+			if (sec[div] !== this.trans[i][0][div]) {
 				return 0;
 			}
 		}
@@ -189,7 +190,7 @@ export class DisplayRoom {
 				} else if (token[0] === "SUM") {
 					this.applySum(obj, arr,  ob[token[0]], list[0]);
 				} else {
-					obj[list[0]] = arr.length;
+					this.applyCount(obj, arr,  ob[token[0]], list[0]);
 				}
 			}
 			this.trans.push(obj);
@@ -200,8 +201,8 @@ export class DisplayRoom {
 	private applyMax(obj: any, secs: [], key: string, keyName: string) {
 		let num = null;
 		for (const sec of secs) {
-			if (num === null || sec[key] > num) {
-				let div = key.substring(key.search("_") + 1);
+			let div = key.substring(key.search("_") + 1);
+			if (num === null || sec[div] > num) {
 				num = sec[div];
 			}
 		}
@@ -211,8 +212,8 @@ export class DisplayRoom {
 	private applyMin(obj: any, rooms: [], key: string, keyName: string) {
 		let num = null;
 		for (const room of rooms) {
-			if (num === null || room[key] < num) {
-				let div = key.substring(key.search("_") + 1);
+			let div = key.substring(key.search("_") + 1);
+			if (num === null || room[div] < num) {
 				num = room[div];
 			}
 		}
@@ -220,22 +221,35 @@ export class DisplayRoom {
 	}
 
 	private applyAvg(obj: any, rooms: [], key: string, keyName: string) {
-		let num = 0;
+		let total = new Decimal(0);
 		for (const room of rooms) {
 			let div = key.substring(key.search("_") + 1);
-			num += room[div];
+			let num = new Decimal(room[div]);
+			total = Decimal.add(num, total);
 		}
-		let res = (num / rooms.length).toFixed(2);
-		obj[keyName] = parseFloat(res);
+		obj[keyName] = Number((total.toNumber() / rooms.length).toFixed(2));
 	}
 
 	private applySum(obj: any, rooms: [], key: string, keyName: string) {
-		let num = 0;
+		let total = 0;
 		for (const room of rooms) {
 			let div = key.substring(key.search("_") + 1);
-			num += room[div];
+			total += room[div];
 		}
-		obj[keyName] = parseFloat(num.toFixed(2));
+		obj[keyName] = Number(total.toFixed(2));
+	}
+
+	private applyCount(obj: any, rooms: [], key: string, keyName: string) {
+		let num = 0;
+		let values: any[] = [];
+		for (const room of rooms) {
+			let div = key.substring(key.search("_") + 1);
+			if (!values.includes(room[div])) {
+				values.push(room[div]);
+				num++;
+			}
+		}
+		obj[keyName] = num;
 	}
 
 	private intoResult() {

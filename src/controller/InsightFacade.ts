@@ -84,39 +84,51 @@ export default class InsightFacade implements IInsightFacade {
 
 	public performQuery(que: unknown): Promise<InsightResult[]> {
 		return new Promise((resolve, reject) => {
-			let query = new CheckSection(InsightFacade.IDs);
 			let quer: any = que;
-			let search;
-			let display;
-			query.checkSection(que)
-				.then(() => {
-					console.log("search section");
-					search = new SearchSection(quer.WHERE, InsightFacade.datasets.get(query.getDataset()));
-					return search.searchSection();
-				})
-				.then((sec) => {
-					console.log("display section");
-					// console.log(sec);
-					display = new DisplaySection(sec, query, query.getDataset());
-					return resolve(display.displaySections());
-				})
-				.catch(() => {
-					let qu = new CheckRoom(InsightFacade.IDs);
-					qu.checkRoom(que)
-						.then(() => {
-							console.log("search room");
-							search = new SearchRoom(quer.WHERE, InsightFacade.datasets.get(qu.getDataset()));
-							return search.searchRoom();
-						})
-						.then((room) => {
-							console.log("display room");
-							display = new DisplayRoom(room, quer, qu.getDataset());
-							return resolve(display.displayRooms());
-						})
-						.catch((err) => {
-							return reject(err);
-						});
-				});
+			let id, search, display;
+			if (quer.OPTIONS && quer.OPTIONS.COLUMNS && Array.isArray(quer.OPTIONS.COLUMNS) &&
+				quer.OPTIONS.COLUMNS.length !== 0) {
+				let div = quer.OPTIONS.COLUMNS[0].search("_");
+				if (div > 0) {
+					id = quer.OPTIONS.COLUMNS[0].substring(0, div);
+				} else {
+					return reject(new InsightError("invalid"));
+				}
+			} else {
+				return reject(new InsightError("invalid"));
+			}
+			let ds = InsightFacade.datasets.get(id);
+			if (!ds) {
+				return reject(new InsightError("invalid"));
+			} else if (ds.kind === "sections") {
+				let query = new CheckSection(InsightFacade.IDs);
+				query.checkSection(que)
+					.then(() => {
+						search = new SearchSection(quer.WHERE, InsightFacade.datasets.get(query.getDataset()));
+						return search.searchSection();
+					})
+					.then((sec) => {
+						display = new DisplaySection(sec, quer, query.getDataset());
+						return resolve(display.displaySections());
+					})
+					.catch((err) => {
+						return reject(err);
+					});
+			} else {
+				let query = new CheckRoom(InsightFacade.IDs);
+				query.checkRoom(que)
+					.then(() => {
+						search = new SearchRoom(quer.WHERE, InsightFacade.datasets.get(query.getDataset()));
+						return search.searchRoom();
+					})
+					.then((room) => {
+						display = new DisplayRoom(room, quer, query.getDataset());
+						return resolve(display.displayRooms());
+					})
+					.catch((err) => {
+						return reject(err);
+					});
+			}
 		});
 	}
 
