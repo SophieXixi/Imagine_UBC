@@ -12,26 +12,22 @@ export class SearchRoom {
 
 	public searchRoom(): Promise<Room[]> {
 		return new Promise((resolve, reject) => {
-			console.log(this.unchecked);
 			for (const room of this.unchecked) {
 				let num: number;
-				num = this.filterSection(room);
+				num = this.filterRoom(room);
 				if (num === 0) {
-					console.log(room);
 					this.valid_room.push(room);
 				}
-				// console.log(this.valid_room);
 			}
 			if (this.valid_room.length > 5000) {
 				return reject(new ResultTooLargeError("> 5000"));
 			} else {
-				// console.log(this.valid_room);
 				return resolve(this.valid_room);
 			}
 		});
 	}
 
-	private filterSection(room: Room): number {
+	private filterRoom(room: Room): number {
 		let arr = Object.keys(this.query);
 		if (arr.length === 0) {
 			return 0;
