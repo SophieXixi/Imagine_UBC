@@ -173,10 +173,6 @@ export class DisplayRoom {
 			let obj = Object.create(null);
 			for (const key of group) {
 				let div = key.substring(key.search("_") + 1);
-				// console.log(div);
-				// console.log(arr[0]);
-				// console.log(arr[0][div]);
-				// console.log("——————————————");
 				obj[key] = arr[0][div];
 			}
 			// console.log("end of group");
@@ -229,7 +225,8 @@ export class DisplayRoom {
 			let div = key.substring(key.search("_") + 1);
 			num += room[div];
 		}
-		obj[keyName] = num / rooms.length;
+		let res = (num / rooms.length).toFixed(2);
+		obj[keyName] = parseFloat(res);
 	}
 
 	private applySum(obj: any, rooms: [], key: string, keyName: string) {
@@ -238,7 +235,7 @@ export class DisplayRoom {
 			let div = key.substring(key.search("_") + 1);
 			num += room[div];
 		}
-		obj[keyName] = num;
+		obj[keyName] = parseFloat(num.toFixed(2));
 	}
 
 	private intoResult() {

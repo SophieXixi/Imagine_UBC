@@ -223,7 +223,8 @@ export class DisplaySection {
 			let div = key.substring(key.search("_") + 1);
 			num += sec[div];
 		}
-		obj[keyName] = num / secs.length;
+		let res = (num / secs.length).toFixed(2);
+		obj[keyName] = parseFloat(res);
 	}
 
 	private applySum(obj: any, secs: [], key: string, keyName: string) {
@@ -232,7 +233,7 @@ export class DisplaySection {
 			let div = key.substring(key.search("_") + 1);
 			num += sec[div];
 		}
-		obj[keyName] = num;
+		obj[keyName] = parseFloat(num.toFixed(2));
 	}
 
 	private intoResult() {
