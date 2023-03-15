@@ -126,7 +126,7 @@ export class CheckRoom {
 								if (this.checkKey(apply[app[0]][arr[0]], "m")) {
 									return 1;
 								}
-							} else if (this.checkKey(apply[app[0]][arr[0]], "sm")) {
+							} else if (arr[0] !== "COUNT" || this.checkKey(apply[app[0]][arr[0]], "sm")) {
 								return 1;
 							}
 						}

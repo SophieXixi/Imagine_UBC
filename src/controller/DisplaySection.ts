@@ -1,5 +1,6 @@
 import {InsightResult} from "./IInsightFacade";
 import {Section} from "./CourseHelper";
+import Decimal from "decimal.js";
 
 export class DisplaySection {
 	private secs: Section[];
@@ -35,6 +36,7 @@ export class DisplaySection {
 	}
 
 	private withoutTrans() {
+		console.log(this.query);
 		let keys = this.query.OPTIONS.COLUMNS;
 		for (const sec of this.secs) {
 			let obj = this.displaySection(sec, keys);
@@ -84,13 +86,6 @@ export class DisplaySection {
 			return this.result[curr][key].localeCompare(this.result[min][key]);
 		} else {
 			return this.result[curr][key] - this.result[min][key];
-			// if (a > 0) {
-			// 	return 1;
-			// } else if (a === 0) {
-			// 	return 0;
-			// } else {
-			// 	return -1;
-			// }
 		}
 	}
 
@@ -133,7 +128,9 @@ export class DisplaySection {
 	private withTrans() {
 		for(const sec of this.secs) {
 			this.formGroup(sec);
+			// console.log("————————————————————————————————————");
 		}
+		// console.log(this.trans);
 		this.calculate(this.query.TRANSFORMATIONS.GROUP, this.query.TRANSFORMATIONS.APPLY);
 		this.intoResult();
 	}
@@ -141,6 +138,7 @@ export class DisplaySection {
 	private formGroup(sec: Section) {
 		let group = [];
 		if (this.trans.length === 0) {
+			// console.log("length 0");
 			group.push(sec);
 			this.trans.push(group);
 		} else {
@@ -158,7 +156,10 @@ export class DisplaySection {
 	private checkGroup(sec: any, i: number, keys: string[]): number{
 		for (const key of keys) {
 			let div = key.substring(key.search("_") + 1);
-			if (sec[div] !== this.trans[i][div]) {
+			// console.log(sec[div]);
+			// console.log(div);
+			// console.log(this.trans[i][0][div]);
+			if (sec[div] !== this.trans[i][0][div]) {
 				return 0;
 			}
 		}
@@ -187,7 +188,7 @@ export class DisplaySection {
 				} else if (token[0] === "SUM") {
 					this.applySum(obj, arr,  ob[token[0]], list[0]);
 				} else {
-					obj[list[0]] = arr.length;
+					this.applyCount(obj, arr, ob[token[0]], list[0]);
 				}
 			}
 			this.trans.push(obj);
@@ -198,8 +199,8 @@ export class DisplaySection {
 	private applyMax(obj: any, secs: [], key: string, keyName: string) {
 		let num = null;
 		for (const sec of secs) {
-			if (num === null || sec[key] > num) {
-				let div = key.substring(key.search("_") + 1);
+			let div = key.substring(key.search("_") + 1);
+			if (num === null || sec[div] > num) {
 				num = sec[div];
 			}
 		}
@@ -209,8 +210,8 @@ export class DisplaySection {
 	private applyMin(obj: any, secs: [], key: string, keyName: string) {
 		let num = null;
 		for (const sec of secs) {
-			if (num === null || sec[key] < num) {
-				let div = key.substring(key.search("_") + 1);
+			let div = key.substring(key.search("_") + 1);
+			if (num === null || sec[div] < num) {
 				num = sec[div];
 			}
 		}
@@ -218,22 +219,35 @@ export class DisplaySection {
 	}
 
 	private applyAvg(obj: any, secs: [], key: string, keyName: string) {
-		let num = 0;
+		let total = new Decimal(0);
 		for (const sec of secs) {
 			let div = key.substring(key.search("_") + 1);
-			num += sec[div];
+			let num = new Decimal(sec[div]);
+			total = Decimal.add(num, total);
 		}
-		let res = (num / secs.length).toFixed(2);
-		obj[keyName] = parseFloat(res);
+		obj[keyName] = Number((total.toNumber() / secs.length).toFixed(2));
 	}
 
 	private applySum(obj: any, secs: [], key: string, keyName: string) {
-		let num = 0;
+		let total = 0;
 		for (const sec of secs) {
 			let div = key.substring(key.search("_") + 1);
-			num += sec[div];
+			total += sec[div];
 		}
-		obj[keyName] = parseFloat(num.toFixed(2));
+		obj[keyName] = Number(total.toFixed(2));
+	}
+
+	private applyCount(obj: any, secs: [], key: string, keyName: string) {
+		let num = 0;
+		let values: any[] = [];
+		for (const sec of secs) {
+			let div = key.substring(key.search("_") + 1);
+			if (!values.includes(sec[div])) {
+				values.push(sec[div]);
+				num++;
+			}
+		}
+		obj[keyName] = num;
 	}
 
 	private intoResult() {
