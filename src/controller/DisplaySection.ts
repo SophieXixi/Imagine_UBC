@@ -84,100 +84,22 @@ export class DisplaySection {
 		}
 	}
 
-	// private objectUP(a: any, b: any): number {
-	// 	let sorting = Object.keys(this.query.OPTIONS.ORDER["keys"]);
-	// 	for (const key of sorting) {
-	// 		if (typeof a[key] === "string") {
-	// 			if (a[key].localeCompare(b[key]) !== 0) {
-	// 				return a[key].localeCompare(b[key]);
-	// 			}
-	// 		} else {
-	// 			if (a[key] !== b[key]) {
-	// 				return a[key] - b[key];
-	// 			}
-	// 		}
-	// 	}
-	// 	return 0;
-	// }
-	// private objectDown(a: any, b: any): number {
-	// 	let sorting = Object.keys(this.query.OPTIONS.ORDER["keys"]);
-	// 	for (const key of sorting) {
-	// 		if (a[key] > b[key]) {
-	// 			return 1;
-	// 		} else if (a[key] < b[key]) {
-	// 			return -1;
-	// 		}
-	// 	}
-	// 	return 0;
-	// }
-	// private orderString(keys: string[]) {
-	// 	for (let i = 0; i < this.result.length; i++) {
-	// 		let min = this.findMin(i, keys);
-	// 		let s = this.result[i];
-	// 		this.result[i] = this.result[min];
-	// 		this.result[min] = s;
-	// 	}
-	// }
-	//
-	// private findMin(i: number, keys: string[]): number {
-	// 	let curr = i + 1;
-	// 	let min: number = i;
-	// 	while (curr !== this.result.length) {
-	// 		for (const item of keys) {
-	// 			let a = this.findMinHelp(curr, min, item);
-	// 			if (a > 0) {
-	// 				break;
-	// 			} else if (a < 0) {
-	// 				min = curr;
-	// 				break;
-	// 			}
-	// 		}
-	// 		curr++;
-	// 	}
-	// 	return min;
-	// }
-	//
-	// private findMinHelp(curr: number, min: number, key: string): number {
-	// 	if (typeof this.result[curr][key] === "string") {
-	// 		// min before curr, return 1; same return 0; after return -1;
-	// 		return this.result[curr][key].localeCompare(this.result[min][key]);
-	// 	} else {
-	// 		return this.result[curr][key] - this.result[min][key];
-	// 	}
-	// }
-	//
-	// private findMax(i: number, keys: string[]): number {
-	// 	let curr = i + 1;
-	// 	let max: number = i;
-	// 	while (curr !== this.result.length) {
-	// 		for (const item of keys) {
-	// 			let a = this.findMaxHelp(curr, max, item);
-	// 			if (a < 0) {
-	// 				break;
-	// 			} else if (a > 0) {
-	// 				max = curr;
-	// 				break;
-	// 			}
-	// 		}
-	// 		curr++;
-	// 	}
-	// 	return max;
-	// }
-	//
-	// private findMaxHelp(curr: number, max: number, key: string): number {
-	// 	if (typeof this.result[curr][key] === "string") {
-	// 		// min before curr, return 1; same return 0; after return -1;
-	// 		return this.result[curr][key].localeCompare(this.result[max][key]);
-	// 	} else {
-	// 		return this.result[curr][key] - this.result[max][key];
-	// 	}
-	// }
-
-	private withTrans() {
-		// this.intoResult();
-	}
-
 	private calculate(group: string[], apply: []) {
+		// let len = this.secs.length;
+		// let applyKey = [], applyToken = [], key = [];
+		// for (const g of this.secs) {
+		// 	let app = [];
+		// 	let obj = Object.create(null);
+		// 	for (const key of group) {
+		// 		if (this.query.OPTIONS.COLUMNS.includes(key)) {
+		// 			let div = key.substring(key.search("_") + 1);
+		// 			obj[key] = g[0][div];
+		// 		}
+		// 	}
+		// 	for (let i = 0; i < applyKey.length; i++) {
+		//
+		// 	}
+		// }
 		let i = this.secs.length;
 		while(i !== 0) {
 			let arr: any[] = this.secs.shift();
