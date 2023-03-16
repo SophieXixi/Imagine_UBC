@@ -2,24 +2,54 @@ import {Section} from "./CourseHelper";
 import {ResultTooLargeError} from "./IInsightFacade";
 export class SearchSection {
 	private query;
+	private whole;
 	private unchecked: Section[];
-	private valid_sections: Section[];
+	private valid_sections: any[];
 	constructor(que: any, ds: any) {
-		this.query = que;
+		this.query = que.WHERE;
 		this.unchecked = ds.sections;
 		this.valid_sections = [];
+		this.whole = que;
 	}
 
-	public searchSection(): Promise<Section[]> {
+	public searchSection(): Promise<any[]> {
 		return new Promise((resolve, reject) => {
 			for (const sec of this.unchecked) {
 				let num = this.filterSection(sec);
 				if (num === 0) {
-					this.valid_sections.push(sec);
+					this.formGroup(sec);
 				}
 			}
 			return resolve(this.valid_sections);
 		});
+	}
+
+	private formGroup(sec: Section) {
+		if (this.whole.TRANSFORMATIONS) {
+			if (this.valid_sections.length === 0) {
+				this.valid_sections.push([sec]);
+			} else {
+				for (let i = 0; i < this.valid_sections.length; i++) {
+					if (this.checkGroup(sec, i, this.whole.TRANSFORMATIONS.GROUP)) {
+						this.valid_sections[i].push(sec);
+						return;
+					}
+				}
+				this.valid_sections.push([sec]);
+			}
+		} else {
+			this.valid_sections.push(sec);
+		}
+	}
+
+	private checkGroup(sec: any, i: number, keys: string[]): number{
+		for (const key of keys) {
+			let div = key.substring(key.search("_") + 1);
+			if (sec[div] !== this.valid_sections[i][0][div]) {
+				return 0;
+			}
+		}
+		return 1;
 	}
 
 	private filterSection(sec: Section): number {
@@ -228,59 +258,19 @@ export class SearchSection {
 		}
 	}
 
-	private IsIncludes(sec: Section, field: string, value: string): boolean {
-		if (field === "dept") {
-			return sec.dept.includes(value.substring(1, value.length - 1));
-		} else if (field === "id") {
-			return sec.id.includes(value.substring(1, value.length - 1));
-		} else if (field === "instructor") {
-			return sec.instructor.includes(value.substring(1, value.length - 1));
-		} else if (field === "title") {
-			return sec.title.includes(value.substring(1, value.length - 1));
-		} else {
-			return sec.uuid.includes(value.substring(1, value.length - 1));
-		}
+	private IsIncludes(sec: any, field: string, value: string): boolean {
+		return sec[field].includes(value.substring(1, value.length - 1));
 	}
 
-	private IsStart(sec: Section, field: string, value: string): boolean {
-		if (field === "dept") {
-			return sec.dept.startsWith(value.substring(0, value.length - 1));
-		} else if (field === "id") {
-			return sec.id.startsWith(value.substring(0, value.length - 1));
-		} else if (field === "instructor") {
-			return sec.instructor.startsWith(value.substring(0, value.length - 1));
-		} else if (field === "title") {
-			return sec.title.startsWith(value.substring(0, value.length - 1));
-		} else {
-			return sec.uuid.startsWith(value.substring(0, value.length - 1));
-		}
+	private IsStart(sec: any, field: string, value: string): boolean {
+		return sec[field].startsWith(value.substring(0, value.length - 1));
 	}
 
-	private IsEnd(sec: Section, field: string, value: string): boolean {
-		if (field === "dept") {
-			return sec.dept.endsWith(value.substring(1, value.length));
-		} else if (field === "id") {
-			return sec.id.endsWith(value.substring(1, value.length));
-		} else if (field === "instructor") {
-			return sec.instructor.endsWith(value.substring(1, value.length));
-		} else if (field === "title") {
-			return sec.title.endsWith(value.substring(1, value.length));
-		} else {
-			return sec.uuid.endsWith(value.substring(1, value.length));
-		}
+	private IsEnd(sec: any, field: string, value: string): boolean {
+		return sec[field].endsWith(value.substring(1, value.length));
 	}
 
-	private IsMatch(sec: Section, field: string, value: string): boolean {
-		if (field === "dept") {
-			return sec.dept === value;
-		} else if (field === "id") {
-			return sec.id === value;
-		} else if (field === "instructor") {
-			return sec.instructor === value;
-		} else if (field === "title") {
-			return sec.title === value;
-		} else {
-			return sec.uuid === value;
-		}
+	private IsMatch(sec: any, field: string, value: string): boolean {
+		return sec[field] === value;
 	}
 }

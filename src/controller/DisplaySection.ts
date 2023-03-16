@@ -3,24 +3,22 @@ import {Section} from "./CourseHelper";
 import Decimal from "decimal.js";
 
 export class DisplaySection {
-	private secs: Section[];
+	private secs: any[];
 	public query: any;
 	private id: string;
 	private result: any[];
-	private trans: any[];
 
-	constructor(secs: Section[], query: any, id: string) {
+	constructor(secs: any[], query: any, id: string) {
 		this.secs = secs;
 		this.query = query;
 		this.id = id;
 		this.result = [];
-		this.trans = [];
 	}
 
 	public displaySections(): Promise<InsightResult[]> {
 		return new Promise((resolve, reject) => {
 			if (this.query.TRANSFORMATIONS) {
-				this.withTrans();
+				this.calculate(this.query.TRANSFORMATIONS.GROUP, this.query.TRANSFORMATIONS.APPLY);
 				if (this.result.length > 5000) {
 					return reject(new ResultTooLargeError("too large"));
 				}
@@ -176,42 +174,13 @@ export class DisplaySection {
 	// }
 
 	private withTrans() {
-		for(const sec of this.secs) {
-			this.formGroup(sec);
-		}
-		// console.log(this.trans);
-		this.calculate(this.query.TRANSFORMATIONS.GROUP, this.query.TRANSFORMATIONS.APPLY);
 		// this.intoResult();
 	}
 
-	private formGroup(sec: Section) {
-		if (this.trans.length === 0) {
-			this.trans.push([sec]);
-		} else {
-			for (let i = 0; i < this.trans.length; i++) {
-				if (this.checkGroup(sec, i, this.query.TRANSFORMATIONS.GROUP)) {
-					this.trans[i].push(sec);
-					return;
-				}
-			}
-			this.trans.push([sec]);
-		}
-	}
-
-	private checkGroup(sec: any, i: number, keys: string[]): number{
-		for (const key of keys) {
-			let div = key.substring(key.search("_") + 1);
-			if (sec[div] !== this.trans[i][0][div]) {
-				return 0;
-			}
-		}
-		return 1;
-	}
-
 	private calculate(group: string[], apply: []) {
-		let i = this.trans.length;
+		let i = this.secs.length;
 		while(i !== 0) {
-			let arr: any[] = this.trans.shift();
+			let arr: any[] = this.secs.shift();
 			let obj = Object.create(null);
 			for (const key of group) {
 				if (this.query.OPTIONS.COLUMNS.includes(key)) {
@@ -245,6 +214,35 @@ export class DisplaySection {
 			i--;
 		}
 	}
+
+	// private applyKey(obj: any, secs: any[], token: any[], keyName: string) {
+	// 	if (token.includes("MAX")) {
+	// 		let num = Math.max(...secs.map((a) => a[div]));
+	// 		obj[secs[0]] = num;
+	// 	} else if (token.includes("MIN")) {
+	// 		let num = Math.min(...secs.map((a) => a[div]));
+	// 		obj[secs[0]] = num;
+	// 	}
+	// 	let avgTotal = new Decimal(0), sumTotal = new Decimal(0), countTotal = 0, num = 0;
+	// 	let countValue: any[] = [];
+	// 	for (const sec of secs) {
+	// 		if (token.includes("AVG")) {
+	// 			let div = key.substring(key.search("_") + 1);
+	// 			let num = new Decimal(sec[div]);
+	// 			avgTotal = Decimal.add(num, avgTotal);
+	// 		} else if (token.includes("SUM")) {
+	// 			let div = key.substring(key.search("_") + 1);
+	// 			let num = new Decimal(sec[div]);
+	// 			sumTotal = Decimal.add(num, sumTotal);
+	// 		} else if (token.includes("COUNT")) {
+	// 			let div = key.substring(key.search("_") + 1);
+	// 			if (!countValue.includes(sec[div])) {
+	// 				countValue.push(sec[div]);
+	// 				num++;
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	private applyAvg(obj: any, secs: any[], key: string, keyName: string) {
 		let total = new Decimal(0);
@@ -280,7 +278,7 @@ export class DisplaySection {
 	}
 
 	private intoResult() {
-		for (const sec of this.trans) {
+		for (const sec of this.secs) {
 			let obj = Object.create(null);
 			for (const key of this.query.OPTIONS.COLUMNS) {
 				obj[key] = sec[key];

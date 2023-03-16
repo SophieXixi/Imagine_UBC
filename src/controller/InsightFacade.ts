@@ -18,6 +18,7 @@ import {CheckSection} from "./CheckSection";
 import {SearchSection} from "./SearchSection";
 import {DisplaySection} from "./DisplaySection";
 import {Room} from "./RoomHelper";
+import {time} from "console";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -98,7 +99,7 @@ export default class InsightFacade implements IInsightFacade {
 				let query = new CheckSection(InsightFacade.IDs);
 				query.checkSection(que)
 					.then(() => {
-						search = new SearchSection(quer.WHERE, InsightFacade.datasets.get(query.getDataset()));
+						search = new SearchSection(quer, InsightFacade.datasets.get(query.getDataset()));
 						return search.searchSection();
 					})
 					.then((sec) => {
