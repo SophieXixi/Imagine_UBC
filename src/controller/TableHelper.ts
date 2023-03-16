@@ -112,11 +112,11 @@ export class BuildingTable {
 						lon = parsedData.lon;
 						return resolve({lat, lon});
 					} catch (err) {
-						return reject(err);
+						//
 					}
 				});
 			}).on("error", (err) => {
-				return reject(err);
+				//
 			});
 		});
 	}

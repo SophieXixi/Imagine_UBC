@@ -29,19 +29,23 @@ export class AddRoom {
 						index
 							.async("string")
 							.then(async (data) => {
-								let document = parse5.parse(data);
-								let buildingtable = BuildingTable.findTable(document.childNodes);
-								if (buildingtable.length === 0) {
-									return reject(new InsightError("No valid building table"));
+								try {
+									let document = parse5.parse(data);
+									let buildingtable = BuildingTable.findTable(document.childNodes);
+									if (buildingtable.length === 0) {
+										return reject(new InsightError("No valid table"));
+									}
+									BuildingMap = await BuildingTable.getInfo(buildingtable, BuildingMap);
+									if (BuildingMap.size === 0) {
+										return reject(new Error("No valid building"));
+									}
+									return fulfill(this.htmhelper(BuildingMap, zip, RoomList, ID, kind));
+								} catch (e) {
+									return reject(new InsightError("parse error"));
 								}
-								BuildingMap = await BuildingTable.getInfo(buildingtable, BuildingMap);
-								if (BuildingMap.size === 0) {
-									return reject(new InsightError("No valid building"));
-								}
-								return fulfill(this.htmhelper(BuildingMap, zip, RoomList, ID, kind));
 							})
 							.catch(() => {
-								return reject(new InsightError("Fail to parse the index file"));
+								return reject(new InsightError("Fail to read the index file"));
 							});
 					}
 				})
@@ -71,7 +75,7 @@ export class AddRoom {
 					return fulfill(this.roomhelper(files, BuildingMap, RoomList, ID, kind));
 				})
 				.catch(() => {
-					// some htm file issue
+					//
 				});
 		});
 	}
