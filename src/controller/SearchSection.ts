@@ -18,11 +18,7 @@ export class SearchSection {
 					this.valid_sections.push(sec);
 				}
 			}
-			if (this.valid_sections.length > 5000) {
-				return reject(new ResultTooLargeError("> 5000"));
-			} else {
-				return resolve(this.valid_sections);
-			}
+			return resolve(this.valid_sections);
 		});
 	}
 
