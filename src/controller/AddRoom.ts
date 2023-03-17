@@ -36,14 +36,16 @@ export class AddRoom {
 										return reject(new InsightError("No valid table"));
 									}
 									BuildingMap = await BuildingTable.getInfo(buildingtable, BuildingMap);
-
+									if (BuildingMap.size === 0) {
+										return reject(new Error("No valid building"));
+									}
 									return fulfill(this.htmhelper(BuildingMap, zip, RoomList, ID, kind));
 								} catch (e) {
 									return reject(new InsightError("parse error"));
 								}
 							})
 							.catch(() => {
-								return reject(new InsightError("Fail to parse the index file"));
+								return reject(new InsightError("Fail to read the index file"));
 							});
 					}
 				})
@@ -61,7 +63,7 @@ export class AddRoom {
 		kind: InsightDatasetKind
 	): Promise<any> {
 		let hrefPromises: any[] = [];
-		return new Promise((fulfill, reject) => {
+		return new Promise((fulfill) => {
 			for (let building of BuildingMap.values()) {
 				let htm = zip.file(building.href.substring(2));
 				if (htm !== null) {
@@ -72,8 +74,8 @@ export class AddRoom {
 				.then((files) => {
 					return fulfill(this.roomhelper(files, BuildingMap, RoomList, ID, kind));
 				})
-				.catch((err) => {
-					return reject(err);
+				.catch(() => {
+					//
 				});
 		});
 	}
