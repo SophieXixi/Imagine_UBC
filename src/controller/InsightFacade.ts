@@ -39,26 +39,20 @@ export default class InsightFacade implements IInsightFacade {
 				return reject(new InsightError("Invalid Dataset ID!"));
 			}
 
-			if (kind === InsightDatasetKind.Sections) {
+			if (kind === InsightDatasetKind.Sections){
 				let courses = new AddCourse(this);
-				courses
-					.addCourse(ID, content, kind)
-					.then((r) => {
-						return fulfill(r);
-					})
-					.catch((e: any) => {
-						return reject(e);
-					});
+				courses.addCourse(ID, content, kind).then((r)  =>{
+					return fulfill(r);
+				}).catch((e: any) => {
+					return reject(e);
+				});
 			} else {
 				let rooms = new AddRoom(this);
-				rooms
-					.addRoom(ID, content, kind)
-					.then((r) => {
-						return fulfill(r);
-					})
-					.catch((e: any) => {
-						return reject(e);
-					});
+				rooms.addRoom(ID, content, kind).then((r)  =>{
+					return fulfill(r);
+				}).catch((e: any) => {
+					return reject(e);
+				});
 			}
 		});
 	}
@@ -85,15 +79,8 @@ export default class InsightFacade implements IInsightFacade {
 		return new Promise((resolve, reject) => {
 			let quer: any = que;
 			let id, search, display;
-			if (quer.OPTIONS && quer.OPTIONS.COLUMNS && Array.isArray(quer.OPTIONS.COLUMNS) &&
-				quer.OPTIONS.COLUMNS.length !== 0) {
-				let div = quer.OPTIONS.COLUMNS[0].search("_");
-				if (div > 0) {
-					id = quer.OPTIONS.COLUMNS[0].substring(0, div);
-				} else {
-					return reject(new InsightError("invalid"));
-				}
-			} else {
+			id = this.searchID(quer);
+			if (id === "0") {
 				return reject(new InsightError("invalid"));
 			}
 			let ds = InsightFacade.datasets.get(id);
@@ -126,6 +113,28 @@ export default class InsightFacade implements IInsightFacade {
 					});
 			}
 		});
+	}
+
+	private searchID(quer: any): string {
+		if (quer.OPTIONS && quer.OPTIONS.COLUMNS && Array.isArray(quer.OPTIONS.COLUMNS) &&
+			quer.OPTIONS.COLUMNS.length !== 0) {
+			let div = quer.OPTIONS.COLUMNS[0].search("_");
+			if (div > 0) {
+				return quer.OPTIONS.COLUMNS[0].substring(0, div);
+			} else if (quer.TRANSFORMATIONS && quer.TRANSFORMATIONS.GROUP &&
+				Array.isArray(quer.TRANSFORMATIONS.GROUP) && quer.TRANSFORMATIONS.GROUP.length !== 0) {
+				let i = quer.TRANSFORMATIONS.GROUP[0].search("_");
+				if (i > 0) {
+					return quer.TRANSFORMATIONS.GROUP[0].substring(0, i);
+				} else {
+					return "0";
+				}
+			} else {
+				return "0";
+			}
+		} else {
+			return "0";
+		}
 	}
 
 	public listDatasets(): Promise<InsightDataset[]> {

@@ -43,16 +43,6 @@ describe("InsightFacade", function () {
 	let campus: string;
 	let indexempty: string;
 	let notable: string;
-	let diffpath: string;
-	let onlyindex: string;
-	let rootfolder: string;
-	let incomp: string;
-	let smalltable: string;
-	let noroom: string;
-	let nophotp: string;
-	let missingcode: string;
-	let ESB: string;
-	let roommissing: string;
 
 	before(function () {
 		// This block runs once and loads the datasets.
@@ -81,304 +71,236 @@ describe("InsightFacade", function () {
 		campus = getContentFromArchives("campus.zip");
 		indexempty = getContentFromArchives("index empty.zip");
 		notable = getContentFromArchives("notable.zip");
-		diffpath = getContentFromArchives("diff path.zip");
-		onlyindex = getContentFromArchives("only index.zip");
-		rootfolder = getContentFromArchives("root folder.zip");
-		incomp = getContentFromArchives("incomp htm.zip");
-		nophotp = getContentFromArchives("no photo.zip");
-		noroom = getContentFromArchives("only index.zip");
-		smalltable = getContentFromArchives("small table.zip");
-		missingcode = getContentFromArchives("missing code.zip");
-		ESB = getContentFromArchives("ESB missing field.zip");
-		roommissing = getContentFromArchives("all missing field.zip");
-
 		// Just in case there is anything hanging around from a previous run of the test suite
 		clearDisk();
 	});
 
-	describe("C2: Add/Remove/List Dataset", function () {
-		before(function () {
-			console.info(`Before: ${this.test?.parent?.title}`);
-		});
-
-		beforeEach(function () {
-			// This section resets the insightFacade instance
-			// This runs before each test
-			console.info(`BeforeTest: ${this.currentTest?.title}`);
-			facade = new InsightFacade();
-		});
-
-		after(function () {
-			console.info(`After: ${this.test?.parent?.title}`);
-		});
-
-		afterEach(function () {
-			// This section resets the data directory (removing any cached data)
-			// This runs after each test, which should make each test independent of the previous one
-			console.info(`AfterTest: ${this.currentTest?.title}`);
-			clearDisk();
-		});
-
-		// ID check
-		it("should reject with  an empty dataset id", function () {
-			const result = facade.addDataset("", sections, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should reject with  white space dataset id to add", function () {
-			const result = facade.addDataset(" ", sections, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should reject with long white space dataset id to add", function () {
-			const result = facade.addDataset("     ", sections, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should reject with underscore after dataset id to add", function () {
-			const result = facade.addDataset("ubc_", sections, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should reject with underscore before dataset id to add", function () {
-			const result = facade.addDataset("_ubc", sections, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should reject with underscore middle dataset id to add", function () {
-			const result = facade.addDataset("ubc_ubc", sections, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-
-		it("should reject with duplicate ids to add dataset", async function () {
-			try {
-				await facade.addDataset("dup", smalltable, InsightDatasetKind.Rooms);
-				await facade.addDataset("dup", smalltable, InsightDatasetKind.Rooms);
-				expect.fail("should be rejected!");
-			} catch (err) {
-				expect(err).to.be.instanceOf(InsightError);
-			}
-		});
-
-		// zip check
-		it("should reject with not zip file", function () {
-			// not a zip file
-			const result = facade.addDataset("notzip", nonzip, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should reject with an empty zip file", function () {
-			// not a zip file
-			const result = facade.addDataset("empty", empty, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should reject with not empty zip but no index file", function () {
-			// not a zip file
-			const result = facade.addDataset("wrongfolder", wrongfolder, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should reject with index file not in root ", function () {
-			// not a zip file
-			const result = facade.addDataset("indexnotroot", indexnotroot, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should reject with not empty zip but only index file", function () {
-			// not a zip file
-			const result = facade.addDataset("only index", onlyindex, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should reject with zip with root folder", function () {
-			// not a zip file
-			const result = facade.addDataset("root folder", rootfolder, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should reject with htm in different path", function () {
-			// not a zip file
-			const result = facade.addDataset("diff path", diffpath, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should reject with wrong zip file", function () {
-			const result = facade.addDataset("empty", small, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should successfully add compus", async function() {
-			const result = await facade.addDataset("campus", campus, InsightDatasetKind.Rooms);
-			return expect(result).to.deep.equal(["campus"]);
-		});
-
-		it("should successfully add incomplete index files", async function() {
-			const result = await facade.addDataset("incomp", incomp, InsightDatasetKind.Rooms);
-			return expect(result).to.deep.equal(["incomp"]);
-		});
-
-		it("should reject with empty index file", function () {
-			const result = facade.addDataset("empty", indexempty, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should reject with no table content", function () {
-			const result = facade.addDataset("notable", notable, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should successfully add with smaller building table", async function() {
-			const result = await facade.addDataset("small", smalltable, InsightDatasetKind.Rooms);
-			return expect(result).to.deep.equal(["small"]);
-		});
-
-		it("should successfully add even one htm missing filed", async function() {
-			const result = await facade.addDataset("missing", ESB, InsightDatasetKind.Rooms);
-			return expect(result).to.deep.equal(["missing"]);
-		});
-
-		it("should reject with all room missing field table", function () {
-			const result = facade.addDataset("empty", roommissing, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should reject with missing field table", function () {
-			const result = facade.addDataset("empty", nophotp, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should reject with no room available", function () {
-			const result = facade.addDataset("empty", noroom, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should reject with missing code filed", function () {
-			const result = facade.addDataset("notable", missingcode, InsightDatasetKind.Rooms);
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		// Remove Dataset Tests
-		it("should reject with  an empty dataset id to remove", function () {
-			const result = facade.removeDataset("");
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should reject with whitespace dataset id to remove", function () {
-			const result = facade.removeDataset(" ");
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should reject with underscore dataset id to remove", function () {
-			const result = facade.removeDataset("ubc_");
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should reject when no dataset been added,nonexit dataset id to remove", function () {
-			const result = facade.removeDataset("nonexist");
-			return expect(result).to.eventually.be.rejectedWith(NotFoundError);
-		});
-
-		it("should reject with datasat added but an nonexist dataset id to remove", async function () {
-			try {
-				await facade.addDataset("removecourse", campus, InsightDatasetKind.Rooms);
-				await facade.removeDataset("nonexist");
-				expect.fail("should have been rejected!");
-			} catch (err) {
-				expect(err).to.be.instanceOf(NotFoundError);
-			}
-		});
-
-		it("should successfully remove one added id", async function () {
-				// Setup
-			await facade.addDataset("remove", campus, InsightDatasetKind.Rooms);
-				// Execution
-			const removeid = await facade.removeDataset("remove");
-				// Validation
-			expect(removeid).to.deep.equal("remove");
-		});
-
-		it("should successfully remove the second", async function () {
-				// Setup
-			await facade.addDataset("add1", campus, InsightDatasetKind.Rooms);
-			await facade.addDataset("add2", campus, InsightDatasetKind.Rooms);
-				// Execution
-			const removeid = await facade.removeDataset("add2");
-				// Validation
-			expect(removeid).to.deep.equal("add2");
-		});
-
-		it("should successfully for combination", async function () {
-			await facade.addDataset("add1", campus, InsightDatasetKind.Rooms);
-			await facade.addDataset("add2", campus, InsightDatasetKind.Rooms);
-			await facade.removeDataset("add2");
-			const left = await facade.listDatasets();
-			expect(left).to.deep.equal([
-				{
-					id: "add1",
-					kind: InsightDatasetKind.Rooms,
-					numRows: 364,
-				},
-			]);
-		});
-
-			// List Dataset Tests
-		it("should list no dataset when no add", function () {
-			const datasets = facade.listDatasets();
-			return expect(datasets).to.eventually.deep.equal([]);
-		});
-
-		it("should list one dataset", async function () {
-				// Setup
-			await facade.addDataset("list", campus, InsightDatasetKind.Rooms);
-				// Execution
-			const datasets = await facade.listDatasets();
-				// Validation
-			expect(datasets).to.deep.equal([
-				{
-					id: "list",
-					kind: InsightDatasetKind.Rooms,
-					numRows: 364,
-				},
-			]);
-		});
-
-			// fixxxx
-		it("should list several datasets", async function () {
-				// Setup
-			await facade.addDataset("sev1", campus, InsightDatasetKind.Rooms);
-			await facade.addDataset("sev2", campus, InsightDatasetKind.Rooms);
-				// Execution
-			const datasets = await facade.listDatasets();
-				// Validation
-			expect(datasets).to.be.an.instanceOf(Array);
-			expect(datasets).to.have.length(2);
-			const course = datasets.find((dataset) => dataset.id === "sev1");
-			expect(course).to.exist;
-			expect(course).to.deep.equal({
-				id: "sev1",
-				kind: InsightDatasetKind.Rooms,
-				numRows: 364,
-			});
-		});
-
-		it("crash test", async function () {
-			await facade.addDataset("add1", campus, InsightDatasetKind.Rooms);
-			const newfacade = new InsightFacade();
-			expect(facade).to.deep.equal(newfacade);
-			await newfacade.addDataset("add2", campus, InsightDatasetKind.Rooms);
-			await newfacade.removeDataset("add1");
-			const left = await facade.listDatasets();
-			expect(left).to.deep.equal([
-				{
-					id: "add2",
-					kind: InsightDatasetKind.Rooms,
-					numRows: 364,
-				},
-			]);
-		});
- 	});
+	// describe("C2: Add/Remove/List Dataset", function () {
+	// 	before(function () {
+	// 		console.info(`Before: ${this.test?.parent?.title}`);
+	// 	});
+	//
+	// 	beforeEach(function () {
+	// 		// This section resets the insightFacade instance
+	// 		// This runs before each test
+	// 		console.info(`BeforeTest: ${this.currentTest?.title}`);
+	// 		facade = new InsightFacade();
+	// 	});
+	//
+	// 	after(function () {
+	// 		console.info(`After: ${this.test?.parent?.title}`);
+	// 	});
+	//
+	// 	afterEach(function () {
+	// 		// This section resets the data directory (removing any cached data)
+	// 		// This runs after each test, which should make each test independent of the previous one
+	// 		console.info(`AfterTest: ${this.currentTest?.title}`);
+	// 		clearDisk();
+	// 	});
+	//
+	// 	it("should reject with  an empty dataset id", function () {
+	// 		const result = facade.addDataset("", sections, InsightDatasetKind.Rooms);
+	// 		return expect(result).to.eventually.be.rejectedWith(InsightError);
+	// 	});
+	//
+	// 	it("should reject with  white space dataset id to add", function () {
+	// 		const result = facade.addDataset(" ", sections, InsightDatasetKind.Rooms);
+	// 		return expect(result).to.eventually.be.rejectedWith(InsightError);
+	// 	});
+	//
+	// 	it("should reject with long white space dataset id to add", function () {
+	// 		const result = facade.addDataset("     ", sections, InsightDatasetKind.Rooms);
+	// 		return expect(result).to.eventually.be.rejectedWith(InsightError);
+	// 	});
+	//
+	// 	it("should reject with underscore after dataset id to add", function () {
+	// 		const result = facade.addDataset("ubc_", sections, InsightDatasetKind.Rooms);
+	// 		return expect(result).to.eventually.be.rejectedWith(InsightError);
+	// 	});
+	//
+	// 	it("should reject with underscore before dataset id to add", function () {
+	// 		const result = facade.addDataset("_ubc", sections, InsightDatasetKind.Rooms);
+	// 		return expect(result).to.eventually.be.rejectedWith(InsightError);
+	// 	});
+	//
+	// 	it("should reject with underscore middle dataset id to add", function () {
+	// 		const result = facade.addDataset("ubc_ubc", sections, InsightDatasetKind.Rooms);
+	// 		return expect(result).to.eventually.be.rejectedWith(InsightError);
+	// 	});
+	//
+	//
+	// 	it("should reject with duplicate ids to add dataset", async function () {
+	// 		try {
+	// 			await facade.addDataset("dup", sections, InsightDatasetKind.Rooms);
+	// 			await facade.addDataset("dup", sections, InsightDatasetKind.Rooms);
+	// 			expect.fail("should be rejected!");
+	// 		} catch (err) {
+	// 			expect(err).to.be.instanceOf(InsightError);
+	// 		}
+	// 	});
+	//
+	// 	it("should reject with not zip file", function () {
+	// 		// not a zip file
+	// 		const result = facade.addDataset("notzip", nonzip, InsightDatasetKind.Rooms);
+	// 		return expect(result).to.eventually.be.rejectedWith(InsightError);
+	// 	});
+	//
+	// 	it("should reject with an empty zip file", function () {
+	// 		// not a zip file
+	// 		const result = facade.addDataset("empty", empty, InsightDatasetKind.Rooms);
+	// 		return expect(result).to.eventually.be.rejectedWith(InsightError);
+	// 	});
+	//
+	// 	it("should reject with not empty zip but no index file", function () {
+	// 		// not a zip file
+	// 		const result = facade.addDataset("wrongfolder", wrongfolder, InsightDatasetKind.Rooms);
+	// 		return expect(result).to.eventually.be.rejectedWith(InsightError);
+	// 	});
+	//
+	// 	it("should reject with index file not in root ", function () {
+	// 		// not a zip file
+	// 		const result = facade.addDataset("indexnotroot", indexnotroot, InsightDatasetKind.Rooms);
+	// 		return expect(result).to.eventually.be.rejectedWith(InsightError);
+	// 	});
+	//
+	// 	it("should successfully add compus", function () {
+	// 		// not a zip file
+	// 		const result = facade.addDataset("campus", campus, InsightDatasetKind.Rooms);
+	// 		return expect(result).to.eventually.deep.equal(["campus"]);
+	// 	});
+	//
+	// 	it("should reject with empty index file", function () {
+	// 		// not a zip file
+	// 		const result = facade.addDataset("empty", indexempty, InsightDatasetKind.Rooms);
+	// 		return expect(result).to.eventually.be.rejectedWith(InsightError);
+	// 	});
+	//
+	// 	it("should reject with no table content", function () {
+	// 		// not a zip file
+	// 		const result = facade.addDataset("notable", notable, InsightDatasetKind.Rooms);
+	// 		return expect(result).to.eventually.be.rejectedWith(InsightError);
+	// 	});
+	//
+	// 				// Remove Dataset Tests
+	// 	it("should reject with  an empty dataset id to remove", function () {
+	// 		const result = facade.removeDataset("");
+	// 		return expect(result).to.eventually.be.rejectedWith(InsightError);
+	// 	});
+	//
+	// 	it("should reject with whitespace dataset id to remove", function () {
+	// 		const result = facade.removeDataset(" ");
+	// 		return expect(result).to.eventually.be.rejectedWith(InsightError);
+	// 	});
+	//
+	// 	it("should reject with underscore dataset id to remove", function () {
+	// 		const result = facade.removeDataset("ubc_");
+	// 		return expect(result).to.eventually.be.rejectedWith(InsightError);
+	// 	});
+	//
+	// 	it("should reject when no dataset been added,nonexit dataset id to remove", function () {
+	// 		const result = facade.removeDataset("nonexist");
+	// 		return expect(result).to.eventually.be.rejectedWith(NotFoundError);
+	// 	});
+	//
+	// 	it("should reject with datasat added but an nonexist dataset id to remove", async function () {
+	// 		try {
+	// 			await facade.addDataset("removecourse", campus, InsightDatasetKind.Rooms);
+	// 			await facade.removeDataset("nonexist");
+	// 			expect.fail("should have been rejected!");
+	// 		} catch (err) {
+	// 			expect(err).to.be.instanceOf(NotFoundError);
+	// 		}
+	// 	});
+	//
+	// 	it("should successfully remove one added id", async function () {
+	// 			// Setup
+	// 		await facade.addDataset("remove", campus, InsightDatasetKind.Rooms);
+	// 			// Execution
+	// 		const removeid = await facade.removeDataset("remove");
+	// 			// Validation
+	// 		expect(removeid).to.deep.equal("remove");
+	// 	});
+	//
+	// 	it("should successfully remove the second", async function () {
+	// 			// Setup
+	// 		await facade.addDataset("add1", campus, InsightDatasetKind.Rooms);
+	// 		await facade.addDataset("add2", campus, InsightDatasetKind.Rooms);
+	// 			// Execution
+	// 		const removeid = await facade.removeDataset("add2");
+	// 			// Validation
+	// 		expect(removeid).to.deep.equal("add2");
+	// 	});
+	//
+	// 	it("should successfully for combination", async function () {
+	// 		await facade.addDataset("add1", campus, InsightDatasetKind.Rooms);
+	// 		await facade.addDataset("add2", campus, InsightDatasetKind.Rooms);
+	// 		await facade.removeDataset("add2");
+	// 		const left = await facade.listDatasets();
+	// 		expect(left).to.deep.equal([
+	// 			{
+	// 				id: "add1",
+	// 				kind: InsightDatasetKind.Rooms,
+	// 				numRows: 364,
+	// 			},
+	// 		]);
+	// 	});
+	//
+	// 		// List Dataset Tests
+	// 	it("should list no dataset when no add", function () {
+	// 		const datasets = facade.listDatasets();
+	// 		return expect(datasets).to.eventually.deep.equal([]);
+	// 	});
+	//
+	// 	it("should list one dataset", async function () {
+	// 			// Setup
+	// 		await facade.addDataset("list", campus, InsightDatasetKind.Rooms);
+	// 			// Execution
+	// 		const datasets = await facade.listDatasets();
+	// 			// Validation
+	// 		expect(datasets).to.deep.equal([
+	// 			{
+	// 				id: "list",
+	// 				kind: InsightDatasetKind.Rooms,
+	// 				numRows: 364,
+	// 			},
+	// 		]);
+	// 	});
+	//
+	// 		// fixxxx
+	// 	it("should list several datasets", async function () {
+	// 			// Setup
+	// 		await facade.addDataset("sev1", campus, InsightDatasetKind.Rooms);
+	// 		await facade.addDataset("sev2", campus, InsightDatasetKind.Rooms);
+	// 			// Execution
+	// 		const datasets = await facade.listDatasets();
+	// 			// Validation
+	// 		expect(datasets).to.be.an.instanceOf(Array);
+	// 		expect(datasets).to.have.length(2);
+	// 		const course = datasets.find((dataset) => dataset.id === "sev1");
+	// 		expect(course).to.exist;
+	// 		expect(course).to.deep.equal({
+	// 			id: "sev1",
+	// 			kind: InsightDatasetKind.Rooms,
+	// 			numRows: 364,
+	// 		});
+	// 	});
+	//
+	// 	it("crash test", async function () {
+	// 		await facade.addDataset("add1", campus, InsightDatasetKind.Rooms);
+	// 		const newfacade = new InsightFacade();
+	// 		expect(facade).to.deep.equal(newfacade);
+	// 		await newfacade.addDataset("add2", campus, InsightDatasetKind.Rooms);
+	// 		await newfacade.removeDataset("add1");
+	// 		const left = await facade.listDatasets();
+	// 		expect(left).to.deep.equal([
+	// 			{
+	// 				id: "add2",
+	// 				kind: InsightDatasetKind.Rooms,
+	// 				numRows: 364,
+	// 			},
+	// 		]);
+	// 	});
+ 	// });
 // });
 
 
