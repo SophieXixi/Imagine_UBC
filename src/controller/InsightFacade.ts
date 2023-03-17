@@ -12,12 +12,11 @@ import * as fs from "fs-extra";
 import {SearchRoom} from "./SearchRoom";
 import {AddCourse} from "./AddCourse";
 import {AddRoom} from "./AddRoom";
+import {Room} from "./RoomHelper";
 import {CheckRoom} from "./CheckRoom";
 import {DisplayRoom} from "./DisplayRoom";
 import {CheckSection} from "./CheckSection";
 import {SearchSection} from "./SearchSection";
-import {Room} from "./RoomHelper";
-import {time} from "console";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -40,20 +39,26 @@ export default class InsightFacade implements IInsightFacade {
 				return reject(new InsightError("Invalid Dataset ID!"));
 			}
 
-			if (kind === InsightDatasetKind.Sections){
+			if (kind === InsightDatasetKind.Sections) {
 				let courses = new AddCourse(this);
-				courses.addCourse(ID, content, kind).then((r)  =>{
-					return fulfill(r);
-				}).catch((e: any) => {
-					return reject(e);
-				});
+				courses
+					.addCourse(ID, content, kind)
+					.then((r) => {
+						return fulfill(r);
+					})
+					.catch((e: any) => {
+						return reject(e);
+					});
 			} else {
 				let rooms = new AddRoom(this);
-				rooms.addRoom(ID, content, kind).then((r)  =>{
-					return fulfill(r);
-				}).catch((e: any) => {
-					return reject(e);
-				});
+				rooms
+					.addRoom(ID, content, kind)
+					.then((r) => {
+						return fulfill(r);
+					})
+					.catch((e: any) => {
+						return reject(e);
+					});
 			}
 		});
 	}
@@ -152,8 +157,6 @@ export default class InsightFacade implements IInsightFacade {
 			ID.includes("_") ||
 			InsightFacade.IDs.includes(ID) ||
 			fs.existsSync("./data/" + ID + ".json")
-			// C2
-			// kind !== InsightDatasetKind.Sections
 		);
 	}
 
