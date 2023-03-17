@@ -105,6 +105,7 @@ export class CheckRoom {
 	}
 
 	private checkApply(query: any): number {
+		let applylist: any[] = [];
 		if (!query.APPLY || !Array.isArray(query.APPLY)) {
 			return 1;
 		} else {
@@ -113,9 +114,10 @@ export class CheckRoom {
 					return 1;
 				} else {
 					let app = Object.keys(apply);  // apply key
-					if (app.length !== 1 || app[0].includes("_")) {
+					if (app.length !== 1 || app[0].includes("_") || applylist.includes(app[0])) {
 						return 1;
 					} else {
+						applylist.push(app[0]);
 						if (typeof apply[app[0]] !== "object") {
 							return 1;
 						} else {
@@ -138,7 +140,7 @@ export class CheckRoom {
 	}
 
 	private checkFilter(item: string, obj: any): number {
-		let res: number;
+		let res: number = 1;
 		if (item === "OR") {
 			res = this.checkQueryOrAnd(obj.OR);
 		} else if (item === "AND") {
@@ -153,8 +155,6 @@ export class CheckRoom {
 			res = this.checkQueryIs(obj.IS);
 		} else if (item === "NOT") {
 			res = this.checkQueryNot(obj.NOT);
-		} else {
-			res = 1;
 		}
 		return res;
 	}

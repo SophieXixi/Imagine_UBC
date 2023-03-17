@@ -105,6 +105,7 @@ export class CheckSection {
 	}
 
 	private checkApply(query: any): number {
+		let applylist: any[] = [];
 		if (!query.APPLY || !Array.isArray(query.APPLY)) {
 			return 1;
 		} else {
@@ -113,9 +114,10 @@ export class CheckSection {
 					return 1;
 				} else {
 					let app = Object.keys(apply);
-					if (app.length !== 1 || app[0].includes("_")) {
+					if (app.length !== 1 || app[0].includes("_") || applylist.includes(app[0])) {
 						return 1;
 					} else {
+						applylist.push(app[0]);
 						if (typeof apply[app[0]] !== "object") {
 							return 1;
 						} else {
