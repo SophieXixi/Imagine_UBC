@@ -113,10 +113,11 @@ export default class InsightFacade implements IInsightFacade {
 				let query = new CheckRoom(InsightFacade.IDs);
 				query.checkRoom(que)
 					.then(() => {
-						search = new SearchRoom(quer.WHERE, InsightFacade.datasets.get(query.getDataset()));
+						search = new SearchRoom(quer, InsightFacade.datasets.get(query.getDataset()));
 						return search.searchRoom();
 					})
 					.then((room) => {
+						console.log(room.length);
 						display = new DisplayRoom(room, quer, query.getDataset());
 						return resolve(display.displayRooms());
 					})

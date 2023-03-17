@@ -114,114 +114,36 @@ export class SearchSection {
 		}
 	}
 
-	private filterGt(obj: any, sec: Section): number {
+	private filterGt(obj: any, sec: any): number {
 		let arr = Object.keys(obj);
 		let array = Object.keys(obj[arr[0]]);
 		let field = array[0].substring(array[0].search("_") + 1);
-		if (field === "avg") {
-			if (sec.avg > obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
-		} else if (field === "pass") {
-			if (sec.pass > obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
-		} else if (field === "fail") {
-			if (sec.fail > obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
-		} else if (field === "audit") {
-			if (sec.audit > obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
+		if (sec[field] > obj[arr[0]][array[0]]) {
+			return 0;
 		} else {
-			if (sec.year > obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
+			return 1;
 		}
 	}
 
-	private filterLt(obj: any, sec: Section): number {
+	private filterLt(obj: any, sec: any): number {
 		let arr = Object.keys(obj);
 		let array = Object.keys(obj[arr[0]]);
 		let field = array[0].substring(array[0].search("_") + 1);
-		if (field === "avg") {
-			if (sec.avg < obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
-		} else if (field === "pass") {
-			if (sec.pass < obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
-		} else if (field === "fail") {
-			if (sec.fail < obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
-		} else if (field === "audit") {
-			if (sec.audit < obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
+		if (sec[field] < obj[arr[0]][array[0]]) {
+			return 0;
 		} else {
-			if (sec.year < obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
+			return 1;
 		}
 	}
 
-	private filterEq(obj: any, sec: Section): number {
+	private filterEq(obj: any, sec: any): number {
 		let arr = Object.keys(obj);
 		let array = Object.keys(obj[arr[0]]);
 		let field = array[0].substring(array[0].search("_") + 1);
-		if (field === "avg") {
-			if (sec.avg === obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
-		} else if (field === "pass") {
-			if (sec.pass === obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
-		} else if (field === "fail") {
-			if (sec.fail === obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
-		} else if (field === "audit") {
-			if (sec.audit === obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
+		if (sec[field] === obj[arr[0]][array[0]]) {
+			return 0;
 		} else {
-			if (sec.year === obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
+			return 1;
 		}
 	}
 
