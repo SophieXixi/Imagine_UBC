@@ -12,11 +12,11 @@ import * as fs from "fs-extra";
 import {SearchRoom} from "./SearchRoom";
 import {AddCourse} from "./AddCourse";
 import {AddRoom} from "./AddRoom";
+import {Room} from "./RoomHelper";
 import {CheckRoom} from "./CheckRoom";
 import {DisplayRoom} from "./DisplayRoom";
 import {CheckSection} from "./CheckSection";
 import {SearchSection} from "./SearchSection";
-import {Room} from "./RoomHelper";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -166,8 +166,6 @@ export default class InsightFacade implements IInsightFacade {
 			ID.includes("_") ||
 			InsightFacade.IDs.includes(ID) ||
 			fs.existsSync("./data/" + ID + ".json")
-			// C2
-			// kind !== InsightDatasetKind.Sections
 		);
 	}
 
