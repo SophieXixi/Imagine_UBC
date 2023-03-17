@@ -1,30 +1,130 @@
 import {Section} from "./CourseHelper";
 import {ResultTooLargeError} from "./IInsightFacade";
+import {Group} from "./Group";
 export class SearchSection {
 	private query;
+	private whole;
 	private unchecked: Section[];
-	private valid_sections: Section[];
+	private groups: any[];
 	constructor(que: any, ds: any) {
-		this.query = que;
+		this.query = que.WHERE;
 		this.unchecked = ds.sections;
-		this.valid_sections = [];
+		this.groups = [];
+		this.whole = que;
 	}
 
-	public searchQuery(): Promise<Section[]> {
+	public searchSection(): Promise<any[]> {
 		return new Promise((resolve, reject) => {
-			for (const sec of this.unchecked) {
-				let num: number;
-				num = this.filterSection(sec);
-				if (num === 0) {
-					this.valid_sections.push(sec);
+			let groupKey: any[] = [], groupField: string[] = [], column: any[] = [];
+			let applyKey: any[] = [], applyToken: any[] = [], keys: string[] = [];
+			if (this.whole.TRANSFORMATIONS) {
+				for (const key of this.whole.TRANSFORMATIONS.GROUP) {
+					if (this.whole.OPTIONS.COLUMNS.includes(key)) {
+						groupKey.push(key);
+						groupField.push(key.substring(key.search("_") + 1));
+					} else {
+						column.push(key.substring(key.search("_") + 1));
+					}
+				}
+				for (const rule of this.whole.TRANSFORMATIONS.APPLY) {
+					let list = Object.keys(rule);    // count Seats
+					if (this.whole.OPTIONS.COLUMNS.includes(list[0])) {
+						applyKey.push(list[0]);
+						let at = Object.keys(rule[list[0]])[0];
+						applyToken.push(at);
+						let s: string = rule[list[0]][at];
+						let div = s.substring(s.search("_") + 1);
+						keys.push(div);
+					}
+				}
+			} else {
+				groupKey = this.whole.OPTIONS.COLUMNS;
+				for (const key of groupKey) {
+					groupField.push(key.substring(key.search("_") + 1));
 				}
 			}
-			if (this.valid_sections.length > 5000) {
-				return reject(new ResultTooLargeError("> 5000"));
-			} else {
-				return resolve(this.valid_sections);
+			for (const sec of this.unchecked) {
+				let num = this.filterSection(sec);
+				if (num === 0) {
+					this.formGroup(sec, groupKey, groupField, applyKey, applyToken, column, keys);
+					if (this.groups.length > 5000) {
+						return reject(new ResultTooLargeError("too large"));
+					}
+				}
 			}
+			if (this.whole.TRANSFORMATIONS) {
+				for (let i = 0; i < this.groups.length; i++) {
+					this.groups[i] = this.groups[i].feedBack();
+				}
+			}
+			this.order();
+			return resolve(this.groups);
 		});
+	}
+
+	private order() {
+		if (this.whole.OPTIONS.ORDER) {
+			if (typeof this.whole.OPTIONS.ORDER === "string") {
+				this.groups.sort((a, b) => this.sortUp(a, b, [this.whole.OPTIONS.ORDER]));
+			} else if (this.whole.OPTIONS.ORDER.dir === "UP"){
+				this.groups.sort((a, b) => this.sortUp(a, b, this.whole.OPTIONS.ORDER.keys));
+			} else {
+				this.groups.sort((a, b) => this.sortDown(a, b, this.whole.OPTIONS.ORDER.keys));
+			}
+		}
+	}
+
+	private sortUp(a: any, b: any, keys: any[]): number {
+		let key: string = keys[0];
+		if (a[key] > b[key]) {
+			return 1;
+		} else if (a[key] < b[key]) {
+			return -1;
+		} else if (keys.slice(1).length === 0) {
+			return 0;
+		} else {
+			return this.sortUp(a, b, keys.slice(1));
+		}
+	}
+
+	private sortDown(a: any, b: any, keys: any[]): number {
+		let key: string = keys[0];
+		if (a[key] > b[key]) {
+			return -1;
+		} else if (a[key] < b[key]) {
+			return 1;
+		} else if (keys.slice(1).length === 0) {
+			return 0;
+		} else {
+			return this.sortDown(a, b, keys.slice(1));
+		}
+	}
+
+	private formGroup(sec: any, groupKey: any[], groupField: string[],
+					  applyKey: any[], applyToken: any[], column: any[], keys: string[]) {
+		if (this.whole.TRANSFORMATIONS) {
+			if (this.groups.length === 0) {
+				let group = new Group(groupKey, groupField, applyKey, applyToken, column, keys);
+				group.init(sec);
+				this.groups.push(group);
+			} else {
+				for (const group of this.groups) {
+					if (group.checkG(sec)) {
+						group.addData(sec);
+						return;
+					}
+				}
+				let group = new Group(groupKey, groupField, applyKey, applyToken, column, keys);
+				group.init(sec);
+				this.groups.push(group);
+			}
+		} else {
+			let obj = Object.create(null);
+			for (let i = 0; i < groupKey.length; i++) {
+				obj[groupKey[i]] = sec[groupField[i]];
+			}
+			this.groups.push(obj);
+		}
 	}
 
 	private filterSection(sec: Section): number {
@@ -89,116 +189,36 @@ export class SearchSection {
 		}
 	}
 
-	private filterGt(obj: any, sec: Section): number {
+	private filterGt(obj: any, sec: any): number {
 		let arr = Object.keys(obj);
 		let array = Object.keys(obj[arr[0]]);
 		let field = array[0].substring(array[0].search("_") + 1);
-		if (field === "avg") {
-			if (sec.avg > obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
-		} else if (field === "pass") {
-			if (sec.pass > obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
-		} else if (field === "fail") {
-			if (sec.fail > obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
-		} else if (field === "audit") {
-			if (sec.audit > obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
+		if (sec[field] > obj[arr[0]][array[0]]) {
+			return 0;
 		} else {
-			if (sec.year > obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
+			return 1;
 		}
 	}
 
-	private filterLt(obj: any, sec: Section): number {
+	private filterLt(obj: any, sec: any): number {
 		let arr = Object.keys(obj);
 		let array = Object.keys(obj[arr[0]]);
 		let field = array[0].substring(array[0].search("_") + 1);
-		if (field === "avg") {
-			if (sec.avg < obj[arr[0]][array[0]]) {
-				// console.log(obj[arr[0]][array[0]]);
-				return 0;
-			} else {
-				// console.log(obj[arr[0]][array[0]]);
-				return 1;
-			}
-		} else if (field === "pass") {
-			if (sec.pass < obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
-		} else if (field === "fail") {
-			if (sec.fail < obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
-		} else if (field === "audit") {
-			if (sec.audit < obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
+		if (sec[field] < obj[arr[0]][array[0]]) {
+			return 0;
 		} else {
-			if (sec.year < obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
+			return 1;
 		}
 	}
 
-	private filterEq(obj: any, sec: Section): number {
+	private filterEq(obj: any, sec: any): number {
 		let arr = Object.keys(obj);
 		let array = Object.keys(obj[arr[0]]);
 		let field = array[0].substring(array[0].search("_") + 1);
-		if (field === "avg") {
-			if (sec.avg === obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
-		} else if (field === "pass") {
-			if (sec.pass === obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
-		} else if (field === "fail") {
-			if (sec.fail === obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
-		} else if (field === "audit") {
-			if (sec.audit === obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
+		if (sec[field] === obj[arr[0]][array[0]]) {
+			return 0;
 		} else {
-			if (sec.year === obj[arr[0]][array[0]]) {
-				return 0;
-			} else {
-				return 1;
-			}
+			return 1;
 		}
 	}
 
@@ -235,59 +255,19 @@ export class SearchSection {
 		}
 	}
 
-	private IsIncludes(sec: Section, field: string, value: string): boolean {
-		if (field === "dept") {
-			return sec.dept.includes(value.substring(1, value.length - 1));
-		} else if (field === "id") {
-			return sec.id.includes(value.substring(1, value.length - 1));
-		} else if (field === "instructor") {
-			return sec.instructor.includes(value.substring(1, value.length - 1));
-		} else if (field === "title") {
-			return sec.title.includes(value.substring(1, value.length - 1));
-		} else {
-			return sec.uuid.includes(value.substring(1, value.length - 1));
-		}
+	private IsIncludes(sec: any, field: string, value: string): boolean {
+		return sec[field].includes(value.substring(1, value.length - 1));
 	}
 
-	private IsStart(sec: Section, field: string, value: string): boolean {
-		if (field === "dept") {
-			return sec.dept.startsWith(value.substring(0, value.length - 1));
-		} else if (field === "id") {
-			return sec.id.startsWith(value.substring(0, value.length - 1));
-		} else if (field === "instructor") {
-			return sec.instructor.startsWith(value.substring(0, value.length - 1));
-		} else if (field === "title") {
-			return sec.title.startsWith(value.substring(0, value.length - 1));
-		} else {
-			return sec.uuid.startsWith(value.substring(0, value.length - 1));
-		}
+	private IsStart(sec: any, field: string, value: string): boolean {
+		return sec[field].startsWith(value.substring(0, value.length - 1));
 	}
 
-	private IsEnd(sec: Section, field: string, value: string): boolean {
-		if (field === "dept") {
-			return sec.dept.endsWith(value.substring(1, value.length));
-		} else if (field === "id") {
-			return sec.id.endsWith(value.substring(1, value.length));
-		} else if (field === "instructor") {
-			return sec.instructor.endsWith(value.substring(1, value.length));
-		} else if (field === "title") {
-			return sec.title.endsWith(value.substring(1, value.length));
-		} else {
-			return sec.uuid.endsWith(value.substring(1, value.length));
-		}
+	private IsEnd(sec: any, field: string, value: string): boolean {
+		return sec[field].endsWith(value.substring(1, value.length));
 	}
 
-	private IsMatch(sec: Section, field: string, value: string): boolean {
-		if (field === "dept") {
-			return sec.dept === value;
-		} else if (field === "id") {
-			return sec.id === value;
-		} else if (field === "instructor") {
-			return sec.instructor === value;
-		} else if (field === "title") {
-			return sec.title === value;
-		} else {
-			return sec.uuid === value;
-		}
+	private IsMatch(sec: any, field: string, value: string): boolean {
+		return sec[field] === value;
 	}
 }

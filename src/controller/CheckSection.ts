@@ -113,7 +113,7 @@ export class CheckSection {
 					return 1;
 				} else {
 					let app = Object.keys(apply);
-					if (app.length !== 1) {
+					if (app.length !== 1 || app[0].includes("_")) {
 						return 1;
 					} else {
 						if (typeof apply[app[0]] !== "object") {
@@ -123,11 +123,10 @@ export class CheckSection {
 							if (arr.length !== 1) {
 								return 1;
 							} else if (arr[0] === "MAX" || arr[0] === "AVG" || arr[0] === "MIN" || arr[0] === "SUM") {
-								if (Array.isArray(apply[app[0]][arr[0]]) ||
-									this.checkKey(apply[app[0]][arr[0]], "m")) {
+								if (this.checkKey(apply[app[0]][arr[0]], "m")) {
 									return 1;
 								}
-							} else if (this.checkKey(apply[app[0]][arr[0]], "sm")) {
+							} else if (arr[0] !== "COUNT" || this.checkKey(apply[app[0]][arr[0]], "sm")) {
 								return 1;
 							}
 						}
