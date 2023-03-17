@@ -20,11 +20,9 @@ export class CheckSection {
 			}
 			let query: any = que as any;
 			if (this.checkWhere(query)) {
-				console.log("where");
 				return reject(new InsightError("invalid"));
 			}else if (query.TRANSFORMATIONS) {
 				if (this.checkTransformation(query)) {
-					console.log("trans");
 					return reject(new InsightError("invalid"));
 				}
 			} else {

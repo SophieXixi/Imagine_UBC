@@ -16,7 +16,6 @@ import {CheckRoom} from "./CheckRoom";
 import {DisplayRoom} from "./DisplayRoom";
 import {CheckSection} from "./CheckSection";
 import {SearchSection} from "./SearchSection";
-import {DisplaySection} from "./DisplaySection";
 import {Room} from "./RoomHelper";
 import {time} from "console";
 
@@ -100,11 +99,7 @@ export default class InsightFacade implements IInsightFacade {
 				query.checkSection(que)
 					.then(() => {
 						search = new SearchSection(quer, InsightFacade.datasets.get(query.getDataset()));
-						return search.searchSection();
-					})
-					.then((sec) => {
-						display = new DisplaySection(sec, quer, query.getDataset());
-						return resolve(display.displaySections());
+						return resolve(search.searchSection());
 					})
 					.catch((err) => {
 						return reject(err);

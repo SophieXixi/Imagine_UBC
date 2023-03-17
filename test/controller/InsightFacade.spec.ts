@@ -804,7 +804,7 @@ describe("InsightFacade", function () {
 			facade = new InsightFacade();
 		// Load the datasets specified in datasetsToQuery and add them to InsightFacade.
 		// Will *fail* if there is a problem reading ANY dataset.
-			const loadDatasetPromises = [facade.addDataset("sections", section, InsightDatasetKind.Sections)];
+			const loadDatasetPromises = [facade.addDataset("rooms", campus, InsightDatasetKind.Rooms)];
 			return Promise.all(loadDatasetPromises);
 		});
 
@@ -833,56 +833,56 @@ describe("InsightFacade", function () {
 	function assertOnResult(actual: unknown, expected: Output): void {
 		expect(actual).to.deep.equal(expected);
 	}
-	// folderTest<Input, Output, Error>(
-	// 	"test",
-	// 	(input) => facade.performQuery(input),
-	// 	"./test/resources/try",
-	// 	{
-	// 		errorValidator,
-	// 		assertOnError,
-	// 		assertOnResult
-	// 	}
-	// );
-	// folderTest<Input, Output, Error>(
-	// 	"invalid-room",
-	// 	(input) => facade.performQuery(input),
-	// 	"./test/resources/invalid-room",
-	// 	{
-	// 		errorValidator,
-	// 		assertOnError,
-	// 		assertOnResult
-	// 	}
-	// );
-	// folderTest<Input, Output, Error>(
-	// 	"invalid-section",
-	// 	(input) => facade.performQuery(input),
-	// 	"./test/resources/invalid-section",
-	// 	{
-	// 		errorValidator,
-	// 		assertOnError,
-	// 		assertOnResult
-	// 	}
-	// );
-	// folderTest<Input, Output, Error>(
-	// 	"success-not full order",
-	// 	(input) => facade.performQuery(input),
-	// 	"./test/resources/success-not full order",
-	// 	{
-	// 		errorValidator,
-	// 		assertOnError,
-	// 		assertOnResult
-	// 	}
-	// );
-	// folderTest<Input, Output, Error>(
-	// 	"success-room",
-	// 	(input) => facade.performQuery(input),
-	// 	"./test/resources/success-room",
-	// 	{
-	// 		errorValidator,
-	// 		assertOnError,
-	// 		assertOnResult
-	// 	}
-	// );
+	folderTest<Input, Output, Error>(
+		"test",
+		(input) => facade.performQuery(input),
+		"./test/resources/try",
+		{
+			errorValidator,
+			assertOnError,
+			assertOnResult
+		}
+	);
+	folderTest<Input, Output, Error>(
+		"invalid-room",
+		(input) => facade.performQuery(input),
+		"./test/resources/invalid-room",
+		{
+			errorValidator,
+			assertOnError,
+			assertOnResult
+		}
+	);
+	folderTest<Input, Output, Error>(
+		"invalid-section",
+		(input) => facade.performQuery(input),
+		"./test/resources/invalid-section",
+		{
+			errorValidator,
+			assertOnError,
+			assertOnResult
+		}
+	);
+	folderTest<Input, Output, Error>(
+		"success-not full order",
+		(input) => facade.performQuery(input),
+		"./test/resources/success-not full order",
+		{
+			errorValidator,
+			assertOnError,
+			assertOnResult
+		}
+	);
+	folderTest<Input, Output, Error>(
+		"success-room",
+		(input) => facade.performQuery(input),
+		"./test/resources/success-room",
+		{
+			errorValidator,
+			assertOnError,
+			assertOnResult
+		}
+	);
 	folderTest<Input, Output, Error>(
 	 "success-section",
 	 (input) => facade.performQuery(input),

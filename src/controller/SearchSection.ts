@@ -1,55 +1,130 @@
 import {Section} from "./CourseHelper";
 import {ResultTooLargeError} from "./IInsightFacade";
+import {Group} from "./Group";
 export class SearchSection {
 	private query;
 	private whole;
 	private unchecked: Section[];
-	private valid_sections: any[];
+	private groups: any[];
 	constructor(que: any, ds: any) {
 		this.query = que.WHERE;
 		this.unchecked = ds.sections;
-		this.valid_sections = [];
+		this.groups = [];
 		this.whole = que;
 	}
 
 	public searchSection(): Promise<any[]> {
 		return new Promise((resolve, reject) => {
+			let groupKey: any[] = [], groupField: string[] = [], column: any[] = [];
+			let applyKey: any[] = [], applyToken: any[] = [], keys: string[] = [];
+			if (this.whole.TRANSFORMATIONS) {
+				for (const key of this.whole.TRANSFORMATIONS.GROUP) {
+					if (this.whole.OPTIONS.COLUMNS.includes(key)) {
+						groupKey.push(key);
+						groupField.push(key.substring(key.search("_") + 1));
+					} else {
+						column.push(key.substring(key.search("_") + 1));
+					}
+				}
+				for (const rule of this.whole.TRANSFORMATIONS.APPLY) {
+					let list = Object.keys(rule);    // count Seats
+					if (this.whole.OPTIONS.COLUMNS.includes(list[0])) {
+						applyKey.push(list[0]);
+						let at = Object.keys(rule[list[0]])[0];
+						applyToken.push(at);
+						let s: string = rule[list[0]][at];
+						let div = s.substring(s.search("_") + 1);
+						keys.push(div);
+					}
+				}
+			} else {
+				groupKey = this.whole.OPTIONS.COLUMNS;
+				for (const key of groupKey) {
+					groupField.push(key.substring(key.search("_") + 1));
+				}
+			}
 			for (const sec of this.unchecked) {
 				let num = this.filterSection(sec);
 				if (num === 0) {
-					this.formGroup(sec);
+					this.formGroup(sec, groupKey, groupField, applyKey, applyToken, column, keys);
+					if (this.groups.length > 5000) {
+						return reject(new ResultTooLargeError("too large"));
+					}
 				}
 			}
-			return resolve(this.valid_sections);
+			if (this.whole.TRANSFORMATIONS) {
+				for (let i = 0; i < this.groups.length; i++) {
+					this.groups[i] = this.groups[i].feedBack();
+				}
+			}
+			this.order();
+			return resolve(this.groups);
 		});
 	}
 
-	private formGroup(sec: Section) {
-		if (this.whole.TRANSFORMATIONS) {
-			if (this.valid_sections.length === 0) {
-				this.valid_sections.push([sec]);
+	private order() {
+		if (this.whole.OPTIONS.ORDER) {
+			if (typeof this.whole.OPTIONS.ORDER === "string") {
+				this.groups.sort((a, b) => this.sortUp(a, b, [this.whole.OPTIONS.ORDER]));
+			} else if (this.whole.OPTIONS.ORDER.dir === "UP"){
+				this.groups.sort((a, b) => this.sortUp(a, b, this.whole.OPTIONS.ORDER.keys));
 			} else {
-				for (let i = 0; i < this.valid_sections.length; i++) {
-					if (this.checkGroup(sec, i, this.whole.TRANSFORMATIONS.GROUP)) {
-						this.valid_sections[i].push(sec);
-						return;
-					}
-				}
-				this.valid_sections.push([sec]);
+				this.groups.sort((a, b) => this.sortDown(a, b, this.whole.OPTIONS.ORDER.keys));
 			}
-		} else {
-			this.valid_sections.push(sec);
 		}
 	}
 
-	private checkGroup(sec: any, i: number, keys: string[]): number{
-		for (const key of keys) {
-			let div = key.substring(key.search("_") + 1);
-			if (sec[div] !== this.valid_sections[i][0][div]) {
-				return 0;
-			}
+	private sortUp(a: any, b: any, keys: any[]): number {
+		let key: string = keys[0];
+		if (a[key] > b[key]) {
+			return 1;
+		} else if (a[key] < b[key]) {
+			return -1;
+		} else if (keys.slice(1).length === 0) {
+			return 0;
+		} else {
+			return this.sortUp(a, b, keys.slice(1));
 		}
-		return 1;
+	}
+
+	private sortDown(a: any, b: any, keys: any[]): number {
+		let key: string = keys[0];
+		if (a[key] > b[key]) {
+			return -1;
+		} else if (a[key] < b[key]) {
+			return 1;
+		} else if (keys.slice(1).length === 0) {
+			return 0;
+		} else {
+			return this.sortDown(a, b, keys.slice(1));
+		}
+	}
+
+	private formGroup(sec: any, groupKey: any[], groupField: string[],
+					  applyKey: any[], applyToken: any[], column: any[], keys: string[]) {
+		if (this.whole.TRANSFORMATIONS) {
+			if (this.groups.length === 0) {
+				let group = new Group(groupKey, groupField, applyKey, applyToken, column, keys);
+				group.init(sec);
+				this.groups.push(group);
+			} else {
+				for (const group of this.groups) {
+					if (group.checkG(sec)) {
+						group.addData(sec);
+						return;
+					}
+				}
+				let group = new Group(groupKey, groupField, applyKey, applyToken, column, keys);
+				group.init(sec);
+				this.groups.push(group);
+			}
+		} else {
+			let obj = Object.create(null);
+			for (let i = 0; i < groupKey.length; i++) {
+				obj[groupKey[i]] = sec[groupField[i]];
+			}
+			this.groups.push(obj);
+		}
 	}
 
 	private filterSection(sec: Section): number {
