@@ -2,32 +2,61 @@ import {ResultTooLargeError} from "./IInsightFacade";
 import {Room} from "./RoomHelper";
 export class SearchRoom {
 	private query;
+	private whole;
 	private unchecked: Room[];
-	private valid_room: Room[];
+	private valid_room: any[];
 	constructor(que: any, ds: any) {
-		this.query = que;
+		this.query = que.WHERE;
 		this.unchecked = ds.rooms;
 		this.valid_room = [];
+		this.whole = que;
 	}
 
-	public searchRoom(): Promise<Room[]> {
+	public searchRoom(): Promise<any[]> {
 		return new Promise((resolve, reject) => {
 			for (const room of this.unchecked) {
 				let num: number;
 				num = this.filterRoom(room);
 				if (num === 0) {
-					this.valid_room.push(room);
+					this.formGroup(room);
 				}
 			}
-			if (this.valid_room.length > 5000) {
-				return reject(new ResultTooLargeError("> 5000"));
-			} else {
-				return resolve(this.valid_room);
-			}
+			return resolve(this.valid_room);
 		});
 	}
 
+	private formGroup(room: Room) {
+		if (this.whole.TRANSFORMATIONS) {
+			if (this.valid_room.length === 0) {
+				this.valid_room.push([room]);
+			} else {
+				for (let i = 0; i < this.valid_room.length; i++) {
+					if (this.checkGroup(room, i, this.whole.TRANSFORMATIONS.GROUP)) {
+						this.valid_room[i].push(room);
+						return;
+					}
+				}
+				this.valid_room.push([room]);
+			}
+		} else {
+			this.valid_room.push(room);
+		}
+	}
+
+	private checkGroup(room: any, i: number, keys: string[]): number{
+		for (const key of keys) {
+			let div = key.substring(key.search("_") + 1);
+			if (room[div] !== this.valid_room[i][0][div]) {
+				return 0;
+			}
+		}
+		return 1;
+	}
+
 	private filterRoom(room: Room): number {
+		if (this.query === null) {
+			return 0;
+		}
 		let arr = Object.keys(this.query);
 		if (arr.length === 0) {
 			return 0;
