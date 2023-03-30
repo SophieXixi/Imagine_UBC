@@ -1,11 +1,14 @@
 import express, {Application, Request, Response} from "express";
 import * as http from "http";
 import cors from "cors";
+import InsightFacade from "../controller/InsightFacade";
+import {InsightDatasetKind, InsightError, NotFoundError} from "../controller/IInsightFacade";
 
 export default class Server {
 	private readonly port: number;
 	private express: Application;
 	private server: http.Server | undefined;
+	private static facade: InsightFacade = new InsightFacade();
 
 	constructor(port: number) {
 		console.info(`Server::<init>( ${port} )`);
@@ -19,7 +22,7 @@ export default class Server {
 		 * by uncommenting the line below. This makes files in ./frontend/public
 		 * accessible at http://localhost:<port>/
 		 */
-		// this.express.use(express.static("./frontend/public"))
+		this.express.use(express.static("./frontend/public"));
 	}
 
 	/**
@@ -86,6 +89,10 @@ export default class Server {
 		this.express.get("/echo/:msg", Server.echo);
 
 		// TODO: your other endpoints should go here
+		this.express.put("/dataset/:id/:kind", Server.put);
+		this.express.delete("/dataset/:id", Server.delete);
+		this.express.post("/query", Server.post);
+		this.express.get("/datasets", Server.get);
 
 	}
 
@@ -110,5 +117,63 @@ export default class Server {
 		} else {
 			return "Message not provided";
 		}
+	}
+
+	private static put(req: Request, res: Response) {
+		try {
+			let id = req.params.id;
+			let kind = req.params.kind as InsightDatasetKind;
+			let buffer = new Buffer(req.body);
+			let content = buffer.toString("base64");
+			console.log("Server::put(..) start");
+			Server.facade.addDataset(id,content,kind).then((response: any) =>{
+				res.status(200).json({result: response});
+			}).catch((err) => {
+				res.status(400).json({error: err});
+			});
+		} catch (err) {
+			res.status(400).json({error: err});
+		}
+	}
+
+	private static delete(req: Request, res: Response) {
+		try {
+			let id = req.params.id;
+			console.log("Server::delete(..) start");
+			Server.facade.removeDataset(id).then((response: any) =>{
+				res.status(200).json({result: response});
+			}).catch((err) => {
+				if (err instanceof InsightError){
+					res.status(400).json({error: err});
+				}
+				if (err instanceof NotFoundError){
+					res.status(404).json({error: err});
+				}
+				res.status(400).json({error: err});
+			});
+		} catch (err) {
+			res.status(400).json({error: err});
+		}
+	}
+
+	private static post(req: Request, res: Response) {
+		try {
+			let query = req.params;
+			console.log("Server::post(..) start");
+			Server.facade.performQuery(query).then((response: any) =>{
+				res.status(200).json({result: response});
+			}).catch((err) => {
+				res.status(400).json({error: err});
+			});
+		} catch (err) {
+			res.status(400).json({error: err});
+		}
+	}
+
+	private static get(res: Response) {
+		console.log("Server::get(..) start");
+		Server.facade.listDatasets().then((response: any) =>{
+			res.status(200).json({result: response});
+		});
 	}
 }
