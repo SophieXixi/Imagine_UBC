@@ -1,0 +1,30 @@
+{
+	"WHERE": {
+		"OR": [
+			{
+				"AND": [
+					{
+						"NOT": {
+							"LT": {
+								"sections_avg": 85
+							}
+						}
+					},
+					{
+						"IS": {
+							"sections_id": "210"
+						}
+					}
+				]
+			}
+		]
+	},
+	"OPTIONS": {
+		"COLUMNS": [
+			"sections_year",
+			"sections_dept",
+			"sections_id",
+			"sections_avg"
+		]
+	}
+}

@@ -8,7 +8,7 @@ export default class Server {
 	private readonly port: number;
 	private express: Application;
 	private server: http.Server | undefined;
-	private static facade: InsightFacade = new InsightFacade();
+	private static facade = new InsightFacade();
 
 	constructor(port: number) {
 		console.info(`Server::<init>( ${port} )`);
@@ -39,14 +39,16 @@ export default class Server {
 				console.error("Server::start() - server already listening");
 				reject();
 			} else {
-				this.server = this.express.listen(this.port, () => {
-					console.info(`Server::start() - server listening on port: ${this.port}`);
-					resolve();
-				}).on("error", (err: Error) => {
-					// catches errors in server start
-					console.error(`Server::start() - server ERROR: ${err.message}`);
-					reject(err);
-				});
+				this.server = this.express
+					.listen(this.port, () => {
+						console.info(`Server::start() - server listening on port: ${this.port}`);
+						resolve();
+					})
+					.on("error", (err: Error) => {
+						// catches errors in server start
+						console.error(`Server::start() - server ERROR: ${err.message}`);
+						reject(err);
+					});
 			}
 		});
 	}
@@ -86,14 +88,13 @@ export default class Server {
 	private registerRoutes() {
 		// This is an example endpoint this you can invoke by accessing this URL in your browser:
 		// http://localhost:4321/echo/hello
-		this.express.get("/echo/:msg", Server.echo);
+		// this.express.get("/echo/:msg", Server.echo);
 
 		// TODO: your other endpoints should go here
 		this.express.put("/dataset/:id/:kind", Server.put);
 		this.express.delete("/dataset/:id", Server.delete);
 		this.express.post("/query", Server.post);
 		this.express.get("/datasets", Server.get);
-
 	}
 
 	/**
@@ -101,36 +102,39 @@ export default class Server {
 	 * These are almost certainly not the best place to put these, but are here for your reference.
 	 * By updating the Server.echo function pointer above, these methods can be easily moved.
 	 */
-	private static echo(req: Request, res: Response) {
-		try {
-			console.log(`Server::echo(..) - params: ${JSON.stringify(req.params)}`);
-			const response = Server.performEcho(req.params.msg);
-			res.status(200).json({result: response});
-		} catch (err) {
-			res.status(400).json({error: err});
-		}
-	}
-
-	private static performEcho(msg: string): string {
-		if (typeof msg !== "undefined" && msg !== null) {
-			return `${msg}...${msg}`;
-		} else {
-			return "Message not provided";
-		}
-	}
+	// private static echo(req: Request, res: Response) {
+	// 	try {
+	// 		console.log(`Server::echo(..) - params: ${JSON.stringify(req.params)}`);
+	// 		const response = Server.performEcho(req.params.msg);
+	// 		res.status(200).json({result: response});
+	// 	} catch (err) {
+	// 		res.status(400).json({error: err});
+	// 	}
+	// }
+	//
+	// private static performEcho(msg: string): string {
+	// 	if (typeof msg !== "undefined" && msg !== null) {
+	// 		return `${msg}...${msg}`;
+	// 	} else {
+	// 		return "Message not provided";
+	// 	}
+	// }
 
 	private static put(req: Request, res: Response) {
 		try {
 			let id = req.params.id;
 			let kind = req.params.kind as InsightDatasetKind;
-			let buffer = new Buffer(req.body);
+			let buffer = Buffer.from(req.body);
 			let content = buffer.toString("base64");
-			console.log("Server::put(..) start");
-			Server.facade.addDataset(id,content,kind).then((response: any) =>{
-				res.status(200).json({result: response});
-			}).catch((err) => {
-				res.status(400).json({error: err});
-			});
+			console.log("Server::put(..) starts");
+			Server.facade
+				.addDataset(id, content, kind)
+				.then((response: any) => {
+					res.status(200).json({result: response});
+				})
+				.catch((err) => {
+					res.status(400).json({error: err});
+				});
 		} catch (err) {
 			res.status(400).json({error: err});
 		}
@@ -140,17 +144,20 @@ export default class Server {
 		try {
 			let id = req.params.id;
 			console.log("Server::delete(..) start");
-			Server.facade.removeDataset(id).then((response: any) =>{
-				res.status(200).json({result: response});
-			}).catch((err) => {
-				if (err instanceof InsightError){
+			Server.facade
+				.removeDataset(id)
+				.then((response: any) => {
+					res.status(200).json({result: response});
+				})
+				.catch((err) => {
+					if (err instanceof InsightError) {
+						res.status(400).json({error: err});
+					}
+					if (err instanceof NotFoundError) {
+						res.status(404).json({error: err});
+					}
 					res.status(400).json({error: err});
-				}
-				if (err instanceof NotFoundError){
-					res.status(404).json({error: err});
-				}
-				res.status(400).json({error: err});
-			});
+				});
 		} catch (err) {
 			res.status(400).json({error: err});
 		}
@@ -158,22 +165,35 @@ export default class Server {
 
 	private static post(req: Request, res: Response) {
 		try {
-			let query = req.params;
+			let query = req.body;
+			console.log(query);
 			console.log("Server::post(..) start");
-			Server.facade.performQuery(query).then((response: any) =>{
-				res.status(200).json({result: response});
-			}).catch((err) => {
-				res.status(400).json({error: err});
-			});
+			Server.facade
+				.performQuery(query)
+				.then((response: any) => {
+					res.status(200).json({result: response});
+				})
+				.catch((err) => {
+					res.status(404).json({error: err});
+				});
 		} catch (err) {
-			res.status(400).json({error: err});
+			res.status(404).json({error: err});
 		}
 	}
 
-	private static get(res: Response) {
-		console.log("Server::get(..) start");
-		Server.facade.listDatasets().then((response: any) =>{
-			res.status(200).json({result: response});
-		});
+	private static get(req: Request, res: Response) {
+		try {
+			console.log("Server::get(..) start");
+			Server.facade
+				.listDatasets()
+				.then((response: any) => {
+					res.status(200).json({result: response});
+				})
+				.catch((err) => {
+					console.log(err);
+				});
+		} catch (err) {
+			console.log(err);
+		}
 	}
 }

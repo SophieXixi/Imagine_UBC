@@ -1,0 +1,122 @@
+[
+	{
+		"sections_year": 2014,
+		"sections_dept": "cpsc",
+		"sections_id": "210",
+		"sections_avg": 86.15
+	},
+	{
+		"sections_year": 2016,
+		"sections_dept": "edcp",
+		"sections_id": "210",
+		"sections_avg": 89.11
+	},
+	{
+		"sections_year": 1900,
+		"sections_dept": "edcp",
+		"sections_id": "210",
+		"sections_avg": 89.11
+	},
+	{
+		"sections_year": 2015,
+		"sections_dept": "edcp",
+		"sections_id": "210",
+		"sections_avg": 86.44
+	},
+	{
+		"sections_year": 1900,
+		"sections_dept": "edcp",
+		"sections_id": "210",
+		"sections_avg": 86.44
+	},
+	{
+		"sections_year": 2015,
+		"sections_dept": "engl",
+		"sections_id": "210",
+		"sections_avg": 85.32
+	},
+	{
+		"sections_year": 1900,
+		"sections_dept": "engl",
+		"sections_id": "210",
+		"sections_avg": 85.32
+	},
+	{
+		"sections_year": 2009,
+		"sections_dept": "engl",
+		"sections_id": "210",
+		"sections_avg": 85.67
+	},
+	{
+		"sections_year": 1900,
+		"sections_dept": "engl",
+		"sections_id": "210",
+		"sections_avg": 85.67
+	},
+	{
+		"sections_year": 2013,
+		"sections_dept": "engl",
+		"sections_id": "210",
+		"sections_avg": 85.77
+	},
+	{
+		"sections_year": 1900,
+		"sections_dept": "engl",
+		"sections_id": "210",
+		"sections_avg": 85.77
+	},
+	{
+		"sections_year": 2010,
+		"sections_dept": "engl",
+		"sections_id": "210",
+		"sections_avg": 85.64
+	},
+	{
+		"sections_year": 1900,
+		"sections_dept": "engl",
+		"sections_id": "210",
+		"sections_avg": 85.64
+	},
+	{
+		"sections_year": 2014,
+		"sections_dept": "engl",
+		"sections_id": "210",
+		"sections_avg": 86.26
+	},
+	{
+		"sections_year": 1900,
+		"sections_dept": "engl",
+		"sections_id": "210",
+		"sections_avg": 86.26
+	},
+	{
+		"sections_year": 2015,
+		"sections_dept": "germ",
+		"sections_id": "210",
+		"sections_avg": 88.24
+	},
+	{
+		"sections_year": 2014,
+		"sections_dept": "phys",
+		"sections_id": "210",
+		"sections_avg": 89.65
+	},
+	{
+		"sections_year": 1900,
+		"sections_dept": "phys",
+		"sections_id": "210",
+		"sections_avg": 89.65
+	},
+	{
+		"sections_year": 2015,
+		"sections_dept": "port",
+		"sections_id": "210",
+		"sections_avg": 88.25
+	},
+	{
+		"sections_year": 1900,
+		"sections_dept": "port",
+		"sections_id": "210",
+		"sections_avg": 88.25
+	}
+]
