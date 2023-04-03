@@ -1,14 +1,56 @@
-.button {
-	background-color: #3f51b5;
-	border: none;
-	color: white;
-	padding: 15px 32px;
-	text-align: center;
-	text-decoration: none;
-	display: inline-block;
-	font-size: 16px;
+.search-container {
+	max-width: 600px;
+	margin: 0 auto;
+	padding: 20px;
+	background-color: #f1f1f1;
+	border-radius: 5px;
 }
 
-.button:hover {
+.search-container h2 {
+	margin-top: 0;
+}
+
+.form-group {
+	margin-bottom: 10px;
+}
+
+label {
+	display: block;
+	margin-bottom: 5px;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+	padding: 5px;
+	border-radius: 5px;
+	border: 1px solid #ccc;
+	width: 70%;
+	margin-right: 10px;
+}
+
+select {
+	width: 20%;
+}
+
+.search-button {
+	padding: 5px;
+	background-color: #4CAF50;
+	color: white;
+	border: none;
+	border-radius: 5px;
 	cursor: pointer;
+}
+
+.search-button:hover {
+	background-color: #3e8e41;
+}
+
+.search-results {
+	margin-top: 20px;
+	border: 1px solid #ccc;
+	padding: 10px;
+	border-radius: 5px;
+	height: 300px;
+	overflow-y: auto;
 }
