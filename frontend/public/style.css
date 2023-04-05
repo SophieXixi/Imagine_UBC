@@ -1,3 +1,21 @@
+/* Set font style and size */
+body {
+	font-family: Arial, sans-serif;
+	font-size: 14px;
+}
+
+/* Add box-shadow to search button */
+.search-button {
+	box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Add transition effect to search button */
+.search-button {
+	transition: background-color 0.3s ease-in-out;
+}
+
+
+
 .search-container {
 	max-width: 600px;
 	margin: 0 auto;
@@ -54,3 +72,54 @@ select {
 	height: 300px;
 	overflow-y: auto;
 }
+
+/* Style the table container */
+.search-results {
+	margin-top: 20px;
+	border-radius: 5px;
+	overflow: hidden;
+}
+
+/* Style the table */
+#resultTable {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+/* Style the table header */
+#resultTable th {
+	background-color: #4CAF50;
+	color: #fff;
+	font-weight: bold;
+	text-align: left;
+	padding: 10px;
+}
+
+/* Style the table rows */
+#resultTable tr {
+	border-bottom: 1px solid #ccc;
+}
+
+/* Style the table cells */
+#resultTable td {
+	padding: 10px;
+}
+
+/* Add alternating background color to table rows */
+#resultTable tr:nth-child(even) {
+	background-color: #f2f2f2;
+}
+
+/* Add hover effect to table rows */
+#resultTable tr:hover {
+	background-color: #ddd;
+}
+
+/* Set max-height to table container to enable scrolling */
+.search-results {
+	max-height: 300px;
+	overflow-y: auto;
+}
+
+
+
