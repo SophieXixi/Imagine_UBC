@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
 	<title>Section Search</title>
 	<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="search-container">
 	<h2>Search for Course Sections</h2>
-	<form>
+	<form enctype="multipart/form-data">
 		<div class="form-group">
 			<label for="department-input">Department:</label>
 			<input type="text" id="department-input" name="department">
@@ -35,11 +36,28 @@
 				<option value="or">Or</option>
 			</select>
 		</div>
-		<button type="submit" class="search-button">Search</button>
+		<div class="form-group">
+			<label for="zip-file">Zip File:</label>
+			<input type="file" id="zip-file" name="zip-file">
+			<button type="button" id="upload-button" class="upload-button">Upload</button>
+		</div>
+		<button type="submit" id = "search" class="search-button">Search</button>
 	</form>
 	<div class="search-results">
 		<!-- Search results will be displayed here -->
+		<table id="resultTable">
+			<thead>
+			<tr>
+				<th>Department</th>
+				<th>Course ID</th>
+				<th>Average</th>
+				<th>Year</th>
+			</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
 	</div>
 </div>
+
+<script type="text/javascript" src="/frontend.js"></script>
 </body>
-</html>
