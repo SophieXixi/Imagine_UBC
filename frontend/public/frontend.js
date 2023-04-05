@@ -1,21 +1,26 @@
 document.getElementById("search").addEventListener("click", searchQuery);
 document.getElementById("upload-button").addEventListener("click", addDataset);
 
-function addDataset() {
+function addDataset(event) {
+	event.preventDefault();
 	const fileInput = document.querySelector('#zip-file');
 	const file = fileInput.files[0];
-	alert(`upload zip file: ${file.name}`);
 
-	const xhr = new XMLHttpRequest();
-	xhr.open('PUT', 'http://localhost:4321/dataset/sections/sections');
-	xhr.onload = function () {
-		if (xhr.status === 200) {
-			console.log('Dataset added successfully');
+	// const xhr = new XMLHttpRequest();
+	// xhr.open('PUT', 'http://localhost:4321/dataset/sections/sections');
+	// xhr.send(file);
+	fetch('http://localhost:4321/dataset/sections/sections', {
+		method: 'PUT',
+		body: file
+	}).then(response => {
+		if (response.ok) {
+			alert('Dataset uploaded successfully');
 		} else {
-			console.log('Error adding dataset');
+			alert('Error uploading dataset');
 		}
-	};
-	xhr.send(file);
+	}).catch(error => {
+		alert('Error uploading dataset:', error);
+	});
 }
 
 function MCOMPARATOR(input) {
@@ -36,7 +41,8 @@ function LOGIC(input) {
 	}
 }
 
-function searchQuery() {
+function searchQuery(event) {
+	event.preventDefault();
 	// Get the search input values
 	const department = document.querySelector('#department-input').value;
 	const avg = parseFloat(document.querySelector('#avg-input').value);
@@ -44,61 +50,101 @@ function searchQuery() {
 	const year = parseFloat(document.querySelector('#year-input').value);
 	const yearComparison = MCOMPARATOR(document.querySelector('#year-comparison').value);
 	const logicOption = LOGIC(document.querySelector('#logic-option').value);
-	let query = {
-		"WHERE":{
-			"AND":[
-				{
-					[logicOption]:[
-						{
-							[avgComparison]:{
-								"sections_avg":avg
-							}
-						},
-						{
-							[yearComparison]:{
-								"sections_year":year
-							}
-						}
-					]
-				},
-				{
-					"IS":{
-						"sections_dept":"cpsc"
-					}
+
+	let query = {};
+
+	if (avg > 100 || avg < 0) {
+		alert('Please enter a valid number for the average (min: 0, max: 100)');
+		return;
+	}
+
+	if (year > 2016 || year < 1900) {
+		alert('Please enter a valid number for the year (min: 1900, max 2022)');
+		return;
+	}
+
+	if (!document.querySelector('#select-all-departments').checked && department === '') {
+		alert('Please enter a department or select "Select All"');
+		return;
+	}
+
+	let whereClause = {
+		[logicOption]: [
+			{
+				[avgComparison]: {
+					"sections_avg": avg
 				}
-			]
-		},
-		"OPTIONS":{
-			"COLUMNS":[
-				"sections_dept",
-				"sections_id",
-				"sections_avg",
-				"sections_year"
-			],
-			"ORDER":"sections_avg"
-		}
+			},
+			{
+				[yearComparison]: {
+					"sections_year": year
+				}
+			}
+		]
 	};
+
+	if (document.querySelector('#select-all-departments').checked) {
+		query = {
+			"WHERE": whereClause,
+			"OPTIONS": {
+				"COLUMNS": [
+					"sections_dept",
+					"sections_id",
+					"sections_avg",
+					"sections_year"
+				],
+				"ORDER": "sections_avg"
+			}
+		};
+	} else {
+		query = {
+			"WHERE": {
+				"AND": [
+					whereClause,
+					{
+						"IS": {
+							"sections_dept": department
+						}
+					}
+				]
+			},
+			"OPTIONS": {
+				"COLUMNS": [
+					"sections_dept",
+					"sections_id",
+					"sections_avg",
+					"sections_year"
+				],
+				"ORDER": "sections_avg"
+			}
+		};
+	}
+
 	let formattedQuery = JSON.stringify(query, null, 2);
 
-	const xhr = new XMLHttpRequest();
-	xhr.open('POST', 'http://localhost:4321/query');
-	xhr.setRequestHeader('Content-Type', 'application/json');
-	xhr.onload = function () {
-		if (xhr.status === 200) {
-			console.log('Query executed successfully');
-			const response = JSON.parse(xhr.responseText);
-			displayResult(response.result); // assuming you have a function called displayResult that generates a table from the response object
+	fetch('http://localhost:4321/query', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: formattedQuery
+	}).then(response => {
+		if (response.ok) {
+			alert('Query executed successfully');
+			response.json().then(data => {
+				displayResult(data.result);
+			});
 		} else {
-			console.log('Error executing query');
+			alert('Error executing query');
 		}
-	};
-	xhr.send(formattedQuery);
+	}).catch(error => {
+		alert('Error executing query:', error);
+	});
 }
 
 function displayResult(result){
 	const tableBody = document.querySelector("#resultTable tbody");
 	tableBody.innerHTML = ""; // clear previous contents of the table
-
 	result.forEach((row) => {
 		const tr = document.createElement("tr");
 		const tdDept = document.createElement("td");
@@ -110,6 +156,11 @@ function displayResult(result){
 		tdId.innerText = row.sections_id;
 		tdAvg.innerText = row.sections_avg;
 		tdYear.innerText = row.sections_year;
+
+		tdDept.style.verticalAlign = "middle";
+		tdId.style.verticalAlign = "middle";
+		tdAvg.style.verticalAlign = "middle";
+		tdYear.style.verticalAlign = "middle";
 
 		tr.appendChild(tdDept);
 		tr.appendChild(tdId);
