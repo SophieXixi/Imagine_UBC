@@ -1,47 +1,54 @@
-<!--<!DOCTYPE html>-->
-<!--<html>-->
+<!--<html xmlns="http://www.w3.org/1999/html">-->
 <!--<head>-->
-<!--	<meta http-equiv="Content-type" content="text/html; charset=utf-8"/>-->
 <!--	<title>Section Search</title>-->
 <!--	<link rel="stylesheet" href="style.css">-->
 <!--</head>-->
 <!--<body>-->
 <!--<div class="search-container">-->
 <!--	<h2>Search for Course Sections</h2>-->
-<!--	<form enctype="multipart/form-data">-->
+<!--	<form>-->
 <!--		<div class="form-group">-->
+<!--			<label for="logic-option">Logic:</label>-->
+<!--			<select id="logic-option" name="logic-option">-->
+<!--				<option value="none">None</option>-->
+<!--				<option value="AND">And</option>-->
+<!--				<option value="OR">Or</option>-->
+<!--			</select>-->
+<!--		</div>-->
+<!--		<div class="form-group">-->
+<!--			<input type="checkbox" id="department-box" name="and">Apply</input>-->
 <!--			<label for="department-input">Department:</label>-->
 <!--			<input type="text" id="department-input" name="department">-->
 <!--		</div>-->
 <!--		<div class="form-group">-->
+<!--			<input type="checkbox" id="avg-box" name="and">Apply</input>-->
 <!--			<label for="avg-input">Average:</label>-->
+<!--			<select id="avg-option" name="avg-comparison">-->
+<!--				<option value="none">None</option>-->
+<!--				<option value="GT">Greater Than</option>-->
+<!--				<option value="EQ">Equal To</option>-->
+<!--				<option value="LT">Less Than</option>-->
+<!--			</select>-->
 <!--			<input type="number" id="avg-input" name="avg" min="0" max="100">-->
-<!--			<select id="avg-comparison" name="avg-comparison">-->
-<!--				<option value="greater">Greater Than</option>-->
-<!--				<option value="less">Less Than</option>-->
-<!--			</select>-->
 <!--		</div>-->
 <!--		<div class="form-group">-->
+<!--			<input type="checkbox" id="year-box" name="and">Apply</input>-->
 <!--			<label for="year-input">Year:</label>-->
+<!--			<select id="year-option" name="year-comparison">-->
+<!--				<option value="none">None</option>-->
+<!--				<option value="GT">Greater Than</option>-->
+<!--				<option value="EQ">Equal To</option>-->
+<!--				<option value="LT">Less Than</option>-->
+<!--			</select>-->
 <!--			<input type="number" id="year-input" name="year" min="1900" max="2023">-->
-<!--			<select id="year-comparison" name="year-comparison">-->
-<!--				<option value="greater">Greater Than</option>-->
-<!--				<option value="less">Less Than</option>-->
-<!--			</select>-->
-<!--		</div>-->
-<!--		<div class="form-group">-->
-<!--			<label for="logic-option">Logic:</label>-->
-<!--			<select id="logic-option" name="logic-option">-->
-<!--				<option value="and">And</option>-->
-<!--				<option value="or">Or</option>-->
-<!--			</select>-->
 <!--		</div>-->
 <!--		<div class="form-group">-->
 <!--			<label for="zip-file">Zip File:</label>-->
 <!--			<input type="file" id="zip-file" name="zip-file">-->
 <!--			<button type="button" id="upload-button" class="upload-button">Upload</button>-->
 <!--		</div>-->
-<!--		<button type="submit" id = "search" class="search-button">Search</button>-->
+<!--		<button type="clear" id="clear-button" class="search-button">Clear</button>-->
+<!--		<button type="submit" id="search-button" class="search-button">Search</button>-->
 <!--	</form>-->
 <!--	<div class="search-results">-->
 <!--		&lt;!&ndash; Search results will be displayed here &ndash;&gt;-->
@@ -58,73 +65,78 @@
 <!--		</table>-->
 <!--	</div>-->
 <!--</div>-->
-
-<!--<script type="text/javascript" src="/frontend.js"></script>-->
+<!--<script type="text/javascript" src="./frontend.js"></script>-->
 <!--</body>-->
+<!--</html>-->
 
-<html xmlns="http://www.w3.org/1999/html">
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
 <head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
 	<title>Section Search</title>
 	<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="search-container">
-	<h2>Search for Course Sections</h2>
-	<form>
+	<h2>Search for Course</h2>
+	<form enctype="multipart/form-data">
 		<div class="form-group">
-			<label for="logic-option">Logic:</label>
-			<select id="logic-option" name="logic-option">
-				<option value="none">None</option>
-				<option value="AND">And</option>
-				<option value="OR">Or</option>
-			</select>
-		</div>
-		<div class="form-group">
-			<input type="checkbox" id="department-box" name="and">Apply</input>
+			<input type="checkbox" id="select-all-departments" name="select-all-departments">Select All Department</input>
 			<label for="department-input">Department:</label>
 			<input type="text" id="department-input" name="department">
 		</div>
 		<div class="form-group">
-			<input type="checkbox" id="avg-box" name="and">Apply</input>
+			<input type="checkbox" id="apply-numeric" name="apply-numeric">Apply numeric filter</input>
+		</div>
+		<div class="form-group">
 			<label for="avg-input">Average:</label>
-			<select id="avg-option" name="avg-comparison">
-				<option value="none">None</option>
-				<option value="GT">Greater Than</option>
-				<option value="EQ">Equal To</option>
-				<option value="LT">Less Than</option>
+			<select id="avg-comparison" name="avg-comparison">
+				<option value="greater">Greater Than</option>
+				<option value="equal">Equal To</option>
+				<option value="less">Less Than</option>
 			</select>
 			<input type="number" id="avg-input" name="avg" min="0" max="100">
 		</div>
 		<div class="form-group">
-			<input type="checkbox" id="year-box" name="and">Apply</input>
 			<label for="year-input">Year:</label>
-			<select id="year-option" name="year-comparison">
-				<option value="none">None</option>
-				<option value="GT">Greater Than</option>
-				<option value="EQ">Equal To</option>
-				<option value="LT">Less Than</option>
+			<select id="year-comparison" name="year-comparison">
+				<option value="greater">Greater Than</option>
+				<option value="equal">Equal To</option>
+				<option value="less">Less Than</option>
 			</select>
 			<input type="number" id="year-input" name="year" min="1900" max="2023">
 		</div>
-		<button type="clear" id="clear-button" class="search-button">Clear</button>
-		<button type="submit" id="search-button" class="search-button">Search</button>
-		<script type="text/javascript" src="./frontend.js"></script>
+		<div class="form-group">
+			<label for="logic-option">Logic:</label>
+			<select id="logic-option" name="logic-option">
+				<option value="and">And</option>
+				<option value="or">Or</option>
+			</select>
+		</div>
+		<div class="form-group">
+			<label for="zip-file">Zip File:</label>
+			<input type="file" id="zip-file" name="zip-file">
+			<button type="button" id="upload-button" class="upload-button">Upload</button>
+		</div>
+		<button type="submit" id = "search" class="search-button">Search</button>
 	</form>
 	<div class="search-results">
+		<!-- Search results will be displayed here -->
 		<table id="resultTable">
 			<thead>
 			<tr>
-				<th>Department  |</th>
-				<th>Course ID  |</th>
-				<th>Average  |</th>
-				<th>Year  |</th>
-				<th>Pass  |</th>
-				<th>Fail  |</th>
+				<th>Department |</th>
+				<th>Course ID |</th>
+				<th>Course Title |</th>
+				<th>Average |</th>
+				<th>Year |</th>
 			</tr>
 			</thead>
 			<tbody></tbody>
 		</table>
 	</div>
 </div>
+
+<script type="text/javascript" src="/frontend.js"></script>
 </body>
-</html>

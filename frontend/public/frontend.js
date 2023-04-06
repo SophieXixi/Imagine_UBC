@@ -1,21 +1,26 @@
 // document.getElementById("search").addEventListener("click", searchQuery);
 // document.getElementById("upload-button").addEventListener("click", addDataset);
 //
-// function addDataset() {
+// function addDataset(event) {
+// 	event.preventDefault();
 // 	const fileInput = document.querySelector('#zip-file');
 // 	const file = fileInput.files[0];
-// 	alert(`upload zip file: ${file.name}`);
 //
-// 	const xhr = new XMLHttpRequest();
-// 	xhr.open('PUT', 'http://localhost:4321/dataset/sections/sections');
-// 	xhr.onload = function () {
-// 		if (xhr.status === 200) {
-// 			console.log('Dataset added successfully');
+// 	// const xhr = new XMLHttpRequest();
+// 	// xhr.open('PUT', 'http://localhost:4321/dataset/sections/sections');
+// 	// xhr.send(file);
+// 	fetch('http://localhost:4321/dataset/sections/sections', {
+// 		method: 'PUT',
+// 		body: file
+// 	}).then(response => {
+// 		if (response.ok) {
+// 			alert('Dataset uploaded successfully');
 // 		} else {
-// 			console.log('Error adding dataset');
+// 			alert('Error uploading dataset');
 // 		}
-// 	};
-// 	xhr.send(file);
+// 	}).catch(error => {
+// 		alert('Error uploading dataset:', error);
+// 	});
 // }
 //
 // function MCOMPARATOR(input) {
@@ -36,7 +41,8 @@
 // 	}
 // }
 //
-// function searchQuery() {
+// function searchQuery(event) {
+// 	event.preventDefault();
 // 	// Get the search input values
 // 	const department = document.querySelector('#department-input').value;
 // 	const avg = parseFloat(document.querySelector('#avg-input').value);
@@ -44,210 +50,307 @@
 // 	const year = parseFloat(document.querySelector('#year-input').value);
 // 	const yearComparison = MCOMPARATOR(document.querySelector('#year-comparison').value);
 // 	const logicOption = LOGIC(document.querySelector('#logic-option').value);
-// 	let query = {
-// 		"WHERE":{
-// 			"AND":[
-// 				{
-// 					[logicOption]:[
-// 						{
-// 							[avgComparison]:{
-// 								"sections_avg":avg
-// 							}
-// 						},
-// 						{
-// 							[yearComparison]:{
-// 								"sections_year":year
-// 							}
-// 						}
-// 					]
-// 				},
-// 				{
-// 					"IS":{
-// 						"sections_dept":"cpsc"
-// 					}
+//
+// 	let query = {};
+//
+// 	if (avg > 100 || avg < 0) {
+// 		alert('Please enter a valid number for the average (min: 0, max: 100)');
+// 		return;
+// 	}
+//
+// 	if (year > 2016 || year < 1900) {
+// 		alert('Please enter a valid number for the year (min: 1900, max 2022)');
+// 		return;
+// 	}
+//
+// 	if (!document.querySelector('#select-all-departments').checked && department === '') {
+// 		alert('Please enter a department or select "Select All"');
+// 		return;
+// 	}
+//
+// 	let whereClause = {
+// 		[logicOption]: [
+// 			{
+// 				[avgComparison]: {
+// 					"sections_avg": avg
 // 				}
-// 			]
-// 		},
-// 		"OPTIONS":{
-// 			"COLUMNS":[
-// 				"sections_dept",
-// 				"sections_id",
-// 				"sections_avg",
-// 				"sections_year"
-// 			],
-// 			"ORDER":"sections_avg"
-// 		}
+// 			},
+// 			{
+// 				[yearComparison]: {
+// 					"sections_year": year
+// 				}
+// 			}
+// 		]
 // 	};
+//
+// 	if (document.querySelector('#select-all-departments').checked) {
+// 		query = {
+// 			"WHERE": whereClause,
+// 			"OPTIONS": {
+// 				"COLUMNS": [
+// 					"sections_dept",
+// 					"sections_id",
+// 					"sections_avg",
+// 					"sections_year"
+// 				],
+// 				"ORDER": "sections_avg"
+// 			}
+// 		};
+// 	} else {
+// 		query = {
+// 			"WHERE": {
+// 				"AND": [
+// 					whereClause,
+// 					{
+// 						"IS": {
+// 							"sections_dept": department
+// 						}
+// 					}
+// 				]
+// 			},
+// 			"OPTIONS": {
+// 				"COLUMNS": [
+// 					"sections_dept",
+// 					"sections_id",
+// 					"sections_avg",
+// 					"sections_year"
+// 				],
+// 				"ORDER": "sections_avg"
+// 			}
+// 		};
+// 	}
+//
 // 	let formattedQuery = JSON.stringify(query, null, 2);
 //
-// 	const xhr = new XMLHttpRequest();
-// 	xhr.open('POST', 'http://localhost:4321/query');
-// 	xhr.setRequestHeader('Content-Type', 'application/json');
-// 	xhr.onload = function () {
-// 		if (xhr.status === 200) {
-// 			console.log('Query executed successfully');
-// 			const response = JSON.parse(xhr.responseText);
-// 			displayResult(response.result); // assuming you have a function called displayResult that generates a table from the response object
+// 	fetch('http://localhost:4321/query', {
+// 		method: 'POST',
+// 		headers: {
+// 			'Content-Type': 'application/json'
+// 		},
+// 		body: formattedQuery
+// 	}).then(response => {
+// 		if (response.ok) {
+// 			alert('Query executed successfully');
+// 			response.json().then(data => {
+// 				displayResult(data.result);
+// 			});
 // 		} else {
-// 			console.log('Error executing query');
+// 			alert('Error executing query');
 // 		}
-// 	};
-// 	xhr.send(formattedQuery);
+// 	}).catch(error => {
+// 		alert('Error executing query:', error);
+// 	});
 // }
 //
 // function displayResult(result){
-// 	let tableBody = document.querySelector('#data-out');
-// 	let out = "";
-// 	for(let res of result) {
-// 		out += `
-// 			<tr>
-// 				<td>${res.sections_dept}</td>
-// 				<td>${res.sections_id}</td>
-// 				<td>${res.sections_avg}</td>
-// 				<td>${res.sections_year}</td>
-// 			</tr>
-// 			`
-// 	}
-// 	tableBody.innerHTML = out;
-// }
+// 	const tableBody = document.querySelector("#resultTable tbody");
+// 	tableBody.innerHTML = ""; // clear previous contents of the table
+// 	result.forEach((row) => {
+// 		const tr = document.createElement("tr");
+// 		const tdDept = document.createElement("td");
+// 		const tdId = document.createElement("td");
+// 		const tdAvg = document.createElement("td");
+// 		const tdYear = document.createElement("td");
 //
+// 		tdDept.innerText = row.sections_dept;
+// 		tdId.innerText = row.sections_id;
+// 		tdAvg.innerText = row.sections_avg;
+// 		tdYear.innerText = row.sections_year;
 //
-
-let query = new Object(null);
-query.WHERE = Object.create(null);
-query.OPTIONS = {
-	"COLUMNS": [
-		"sections_uuid",
-		"sections_year",
-		"sections_dept",
-		"sections_id",
-		"sections_title",
-		"sections_instructor",
-		"sections_avg",
-		"sections_pass",
-		"sections_fail",
-		"sections_audit"
-	],
-	"ORDER": "sections_avg"
-}
-let dC = 0, aC = 0, yC = 0;
-let deptContent, avgFil, avgContent, yearFil, yearContent;
-// console.log(logic);
-
-let deptCheck = document.getElementById("department-box");
-deptCheck.addEventListener("change", function() {
-	dC = 1;
-	deptContent = document.getElementById("department-input").value;
-})
-
-let avgCheck = document.getElementById("avg-box");
-// avgCheck.onchange = (ev) => {
-// 	aC = 1;
-// 	avgFil = document.getElementById("avg-option").value;
-// 	avgContent = document.getElementById("avg-input").value;
+// 		tdDept.style.verticalAlign = "middle";
+// 		tdId.style.verticalAlign = "middle";
+// 		tdAvg.style.verticalAlign = "middle";
+// 		tdYear.style.verticalAlign = "middle";
+//
+// 		tr.appendChild(tdDept);
+// 		tr.appendChild(tdId);
+// 		tr.appendChild(tdAvg);
+// 		tr.appendChild(tdYear);
+//
+// 		tableBody.appendChild(tr);
+// 	});
 // }
-avgCheck.addEventListener("change", function() {
-	if (this.checked) {
-		console.log("checked");
-		aC = 1;
-		avgFil = document.getElementById("avg-option").value;
-		avgContent = document.getElementById("avg-input").value;
-		console.log(aC);
-	}
-})
-console.log(avgContent, avgFil);
-let yearCheck = document.getElementById("year-box");
-yearCheck.addEventListener("change", function() {
-	yC = 1;
-	yearFil = document.getElementById("year-option").value;
-	yearContent = document.getElementById("year-input").value;
-})
-// console.log(dC, aC, yC);
 
-function handleString(name, content) {
-	let obj = Object.create(null);
-	obj.IS = Object.create(null);
-	let s = "sections_";
-	obj.IS[s.concat(name)] = content;
-	return obj;
-}
-function handleNumber(filter, name, content) {
-	let obj = Object.create(null);
-	obj[filter] = Object.create(null);
-	let s = "sections_";
-	obj[filter][s.concat(name)] = content;
-	console.log(obj);
-	return obj;
+
+document.getElementById("search").addEventListener("click", searchQuery);
+document.getElementById("upload-button").addEventListener("click", addDataset);
+
+function addDataset(event) {
+	event.preventDefault();
+	const fileInput = document.querySelector('#zip-file');
+	const file = fileInput.files[0];
+
+	// const xhr = new XMLHttpRequest();
+	// xhr.open('PUT', 'http://localhost:4321/dataset/sections/sections');
+	// xhr.send(file);
+	fetch('http://localhost:4321/dataset/sections/sections', {
+		method: 'PUT',
+		body: file
+	}).then(response => {
+		if (response.ok) {
+			alert('Dataset uploaded successfully');
+		} else {
+			alert('Error uploading dataset');
+		}
+	}).catch(error => {
+		alert('Error uploading dataset:', error);
+	});
 }
 
-let clear = document.getElementById("clear-button");
-clear.addEventListener("click", function() {
-	console.log("clear");
-});
-
-document.getElementById("search-button")
-	.addEventListener("click", handleSearch);
-
-function handleSearch() {
-	let logic = document.getElementById("logic-option").value;
-	if(logic == "none") {
-		console.log("none");
-		if (dC == 1) {
-			console.log("dept");
-			query.WHERE = handleString("dept", deptContent);
-		} else if (aC == 1) {
-			console.log("avg");
-			query.WHERE = handleNumber(avgFil, "avg", avgContent);
-		} else {
-			console.log("year");
-			query.WHERE = handleNumber(yearFil, "year", yearContent);
-		}
-	} else {
-		console.log("have");
-		query.WHERE[logic] = [];
-		if (dC == 1) {
-			query.WHERE[logic].push(handleString("dept", deptContent));
-		}
-		if (aC == 1) {
-			query.WHERE[logic].push(handleNumber(avgFil, "avg", avgContent));
-		}
-		if (yC == 1) {
-			query.WHERE[logic].push(handleNumber(yearFil, "year", yearContent));
-		}
+function MCOMPARATOR(input) {
+	if (input === "greater") {
+		return "GT";
+	} else if (input === "less"){
+		return  "LT";
+	} else if (input === "equal"){
+		return "EQ";
 	}
-	// console.log("a");
-	console.log(query);
-	// console.log(dC, aC, yC);
-	let body = JSON.stringify(query);
-	let request = new XMLHttpRequest();
-	request.open('POST', 'http://localhost:4321/query');
-	request.responseType = 'json';
-	request.setRequestHeader('Content-Type', 'application/json');
-	request.onload = function () {
-		if (request.status === 200) {
-			const response = JSON.parse(request.responseText);
-			handleResult(response.result); // assuming you have a function called displayResult that generates a table from the response object
-		} else {
-			console.log('Error executing query');
+}
+
+function LOGIC(input) {
+	if (input === "and") {
+		return "AND";
+	} else if (input === "or"){
+		return  "OR";
+	}
+}
+
+function searchQuery(event) {
+	event.preventDefault();
+	// Get the search input values
+	const department = document.querySelector('#department-input').value;
+	const avg = parseFloat(document.querySelector('#avg-input').value);
+	const avgComparison = MCOMPARATOR(document.querySelector("#avg-comparison").value);
+	const year = parseFloat(document.querySelector('#year-input').value);
+	const yearComparison = MCOMPARATOR(document.querySelector('#year-comparison').value);
+	const logicOption = LOGIC(document.querySelector('#logic-option').value);
+
+	let query = {
+		"WHERE": {},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept",
+				"sections_id",
+				"sections_title",
+				"sections_avg",
+				"sections_year"
+			],
+			"ORDER": "sections_avg"
 		}
 	};
-	request.send(body);
+
+	if (document.querySelector('#apply-numeric').checked) {
+		if (avg > 100 || avg < 0) {
+			alert('Please enter a valid number for the average (min: 0, max: 100)');
+			return;
+		}
+
+		if (year > 2016 || year < 1900) {
+			alert('Please enter a valid number for the year (min: 1900, max 2022)');
+			return;
+		}
+	}
+
+	if (!document.querySelector('#select-all-departments').checked && department === '') {
+
+	}
+
+	let whereClause = {
+		[logicOption]: [
+			{
+				[avgComparison]: {
+					"sections_avg": avg
+				}
+			},
+			{
+				[yearComparison]: {
+					"sections_year": year
+				}
+			}
+		]
+	};
+
+	if (document.querySelector('#select-all-departments').checked) {
+		if (document.querySelector('#apply-numeric').checked) {
+			query.WHERE = whereClause;
+		}
+	} else if (department === '') {
+		alert('Please enter a department or select "Select All"');
+		return;
+	} else {
+		if (document.querySelector('#apply-numeric').checked) {
+			query.WHERE = {
+				"AND": [
+					whereClause,
+					{
+						"IS": {
+							"sections_dept": department
+						}
+					}
+				]
+			}
+		} else {
+			query.WHERE = {
+				"IS": {
+					"sections_dept": department
+				}
+			}
+		}
+	}
+
+	let formattedQuery = JSON.stringify(query, null, 2);
+
+	fetch('http://localhost:4321/query', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: formattedQuery
+	}).then(response => {
+		if (response.ok) {
+			alert('Query executed successfully');
+			response.json().then(data => {
+				displayResult(data.result);
+			});
+		} else {
+			alert('Error executing query');
+		}
+	}).catch(error => {
+		alert('Error executing query:', error);
+	});
 }
 
-function handleResult(result) {
-	let tableBody = document.querySelector('#resultTable');
-	let out = "";
-	for(let res of result) {
-		out += `
-			<tr>
-				<td>${res.sections_dept}</td>
-				<td>${res.sections_id}</td>
-				<td>${res.sections_avg}</td>
-				<td>${res.sections_year}</td>
-				<td>${res.sections_pass}</td>
-				<td>${res.sections_fail}</td>
-			</tr>
-			`
-	}
-	tableBody.innerHTML = out;
+function displayResult(result){
+	const tableBody = document.querySelector("#resultTable tbody");
+	tableBody.innerHTML = ""; // clear previous contents of the table
+	result.forEach((row) => {
+		const tr = document.createElement("tr");
+		const tdDept = document.createElement("td");
+		const tdId = document.createElement("td");
+		const tdAvg = document.createElement("td");
+		const tdYear = document.createElement("td");
+		const tdTitle = document.createElement("td");
+
+		tdDept.innerText = row.sections_dept;
+		tdId.innerText = row.sections_id;
+		tdAvg.innerText = row.sections_avg;
+		tdYear.innerText = row.sections_year;
+		tdTitle.innerText = row.sections_title;
+
+		tdDept.style.verticalAlign = "middle";
+		tdId.style.verticalAlign = "middle";
+		tdAvg.style.verticalAlign = "middle";
+		tdYear.style.verticalAlign = "middle";
+		tdTitle.style.verticalAlign = "middle";
+
+		tr.appendChild(tdDept);
+		tr.appendChild(tdId);
+		tr.appendChild(tdTitle);
+		tr.appendChild(tdAvg);
+		tr.appendChild(tdYear);
+
+		tableBody.appendChild(tr);
+	});
 }
+
+
