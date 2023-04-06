@@ -225,6 +225,7 @@ function searchQuery(event) {
 	const yearComparison = MCOMPARATOR(document.querySelector('#year-comparison').value);
 	const logicOption = LOGIC(document.querySelector('#logic-option').value);
 
+
 	let query = {
 		"WHERE": {},
 		"OPTIONS": {
@@ -249,10 +250,6 @@ function searchQuery(event) {
 			alert('Please enter a valid number for the year (min: 1900, max 2022)');
 			return;
 		}
-	}
-
-	if (!document.querySelector('#select-all-departments').checked && department === '') {
-
 	}
 
 	let whereClause = {
@@ -342,6 +339,11 @@ function displayResult(result){
 		tdAvg.style.verticalAlign = "middle";
 		tdYear.style.verticalAlign = "middle";
 		tdTitle.style.verticalAlign = "middle";
+
+		tdDept.style.verticalAlign = "middle";
+		tdId.style.verticalAlign = "middle";
+		tdAvg.style.verticalAlign = "middle";
+		tdYear.style.verticalAlign = "middle";
 
 		tr.appendChild(tdDept);
 		tr.appendChild(tdId);
