@@ -51,5 +51,6 @@
 		"lint": "eslint src test --ext .ts",
 		"fix": "yarn lint --fix",
 		"start": "ts-node src/App.ts"
-	}
+	},
+	"main": "index.js"
 }
